@@ -4,6 +4,7 @@ import { useInputController } from '../shared/useInputController'
 import { Sprite } from '../shared/Sprite'
 import { staticSprites, SPRITE_SIZE, type StaticSprite } from './gameConfig'
 import { PromptModal } from './PromptModal'
+import progressBarImg from '../assets/progressbar.png'
 
 // Store user answers
 export interface UserAnswers {
@@ -185,6 +186,20 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
           {answers.background && <div>🖼️ Background: {answers.background}</div>}
         </div>
       )}
+
+      {/* Progress Bar */}
+      <img 
+        src={progressBarImg} 
+        alt="Progress Bar" 
+        style={{
+          position: 'absolute',
+          bottom: '20px',
+          right: '20px',
+          width: '500px',
+          zIndex: 50,
+          pointerEvents: 'none'
+        }} 
+      />
     </div>
   )
 }
