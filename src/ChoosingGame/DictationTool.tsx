@@ -51,6 +51,10 @@ export interface DictationButtonProps {
     onTranscriptChange?: (transcript: string) => void;
     /** Called with only the finalized transcript */
     onFinalTranscript?: (transcript: string) => void;
+    /** Called when dictation starts (mic activated) */
+    onDictationStart?: () => void;
+    /** Called when dictation ends (mic deactivated) */
+    onDictationEnd?: () => void;
     /** Speech recognition language (default: 'en-US') */
     language?: string;
     /** Custom styles for the button */
@@ -64,6 +68,8 @@ export interface DictationButtonProps {
 export function DictationButton({
     onTranscriptChange,
     onFinalTranscript,
+    onDictationStart,
+    onDictationEnd,
     language = 'en-US',
     style,
     className,
@@ -80,12 +86,16 @@ export function DictationButton({
     // Store callbacks in refs to avoid recreating recognition on every render
     const onTranscriptChangeRef = useRef(onTranscriptChange);
     const onFinalTranscriptRef = useRef(onFinalTranscript);
+    const onDictationStartRef = useRef(onDictationStart);
+    const onDictationEndRef = useRef(onDictationEnd);
 
     // Keep refs updated with latest callbacks
     useEffect(() => {
         onTranscriptChangeRef.current = onTranscriptChange;
         onFinalTranscriptRef.current = onFinalTranscript;
-    }, [onTranscriptChange, onFinalTranscript]);
+        onDictationStartRef.current = onDictationStart;
+        onDictationEndRef.current = onDictationEnd;
+    }, [onTranscriptChange, onFinalTranscript, onDictationStart, onDictationEnd]);
 
     useEffect(() => {
         const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -188,6 +198,7 @@ export function DictationButton({
             shouldBeListeningRef.current = false;
             recognitionRef.current.stop();
             setIsListening(false);
+            onDictationEndRef.current?.();
         } else {
             // Reset accumulated transcript for new session
             accumulatedTranscriptRef.current = '';
@@ -195,6 +206,7 @@ export function DictationButton({
             shouldBeListeningRef.current = true;
             recognitionRef.current.start();
             setIsListening(true);
+            onDictationStartRef.current?.();
         }
     };
 

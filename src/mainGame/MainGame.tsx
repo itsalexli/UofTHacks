@@ -5,13 +5,14 @@ import { Sprite } from '../shared/Sprite'
 import { staticSprites, SPRITE_SIZE } from './gameConfig'
 import type { UserAnswers } from '../ChoosingGame/MainChoosingGame'
 import { BattleScreen } from './BattleScreen'
+import { matchBackground, type BackgroundImage } from './backgroundMatcher'
 
 interface MainGameProps {
-  userAnswers: any;
+  userAnswers: UserAnswers;
   onBack: () => void;
 }
 
-function MainGame({ userAnswers: _userAnswers, onBack }: MainGameProps) {
+function MainGame({ userAnswers, onBack }: MainGameProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [background, setBackground] = useState<BackgroundImage | null>(null)
@@ -92,14 +93,14 @@ function MainGame({ userAnswers: _userAnswers, onBack }: MainGameProps) {
     backgroundColor: '#f0f0f0',
     ...(background && {
       backgroundImage: `url(/src/assets/backgrounds/${background.filename})`,
-      backgroundSize: 'contain',
+      backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',
     })
   }
 
   return (
-    <div style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden', backgroundColor: '#f0f0f0' }}>
+    <div style={backgroundStyle}>
       {/* Battle Screen Overlay takes full precedence if active */}
       {activeMenu && activeSprite ? (
         <BattleScreen 
@@ -149,6 +150,7 @@ function MainGame({ userAnswers: _userAnswers, onBack }: MainGameProps) {
               fontSize: '12px',
               zIndex: 1000
             }}>
+              {isLoadingBg && <div style={{ marginBottom: '8px', color: '#666' }}>Creating world... 🎨</div>}
               <strong>Your choices:</strong>
               {userAnswers.character && <div>👤 {userAnswers.character}</div>}
               {userAnswers.music && <div>🎵 {userAnswers.music}</div>}

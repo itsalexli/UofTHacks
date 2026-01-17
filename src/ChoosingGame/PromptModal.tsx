@@ -19,6 +19,7 @@ export function PromptModal({
     placeholder = 'Type your answer or use the mic...',
 }: PromptModalProps) {
     const [answer, setAnswer] = useState('');
+    const [answerBeforeDictation, setAnswerBeforeDictation] = useState('');
 
     const handleSubmit = () => {
         onSubmit(answer);
@@ -132,7 +133,11 @@ export function PromptModal({
                     />
                     <div style={styles.buttonContainer}>
                         <DictationButton
-                            onTranscriptChange={(text) => setAnswer(text)}
+                            onDictationStart={() => setAnswerBeforeDictation(answer)}
+                            onTranscriptChange={(text) => {
+                                const separator = answerBeforeDictation && !answerBeforeDictation.endsWith(' ') ? ' ' : '';
+                                setAnswer(answerBeforeDictation + separator + text);
+                            }}
                             size={48}
                         />
                     </div>
