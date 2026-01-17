@@ -3,6 +3,7 @@ import '../App.css'
 import { useInputController } from '../shared/useInputController'
 import { Sprite } from '../shared/Sprite'
 import { staticSprites, SPRITE_SIZE } from './gameConfig'
+import type { UserAnswers } from '../ChoosingGame/MainChoosingGame'
 import { BattleScreen } from './BattleScreen'
 
 interface MainGameProps {
@@ -13,7 +14,25 @@ interface MainGameProps {
 function MainGame({ userAnswers: _userAnswers, onBack }: MainGameProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
+  const [background, setBackground] = useState<BackgroundImage | null>(null)
+  const [isLoadingBg, setIsLoadingBg] = useState(false)
   const keysPressed = useInputController()
+
+  // Match background on mount based on user's answer
+  useEffect(() => {
+    if (userAnswers?.background) {
+      setIsLoadingBg(true)
+      matchBackground(userAnswers.background)
+        .then(matched => {
+          setBackground(matched)
+          setIsLoadingBg(false)
+        })
+        .catch(err => {
+          console.error('Background matching failed:', err)
+          setIsLoadingBg(false)
+        })
+    }
+  }, [userAnswers?.background])
 
   // Game Loop
   useEffect(() => {
@@ -64,6 +83,21 @@ function MainGame({ userAnswers: _userAnswers, onBack }: MainGameProps) {
 
   const activeSprite = staticSprites.find(s => s.id === activeMenu);
 
+  // Build background style
+  const backgroundStyle: React.CSSProperties = {
+    width: '100vw',
+    height: '100vh',
+    position: 'relative',
+    overflow: 'hidden',
+    backgroundColor: '#f0f0f0',
+    ...(background && {
+      backgroundImage: `url(/src/assets/backgrounds/${background.filename})`,
+      backgroundSize: 'contain',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+    })
+  }
+
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden', backgroundColor: '#f0f0f0' }}>
       {/* Battle Screen Overlay takes full precedence if active */}
@@ -81,6 +115,47 @@ function MainGame({ userAnswers: _userAnswers, onBack }: MainGameProps) {
         />
       ) : (
         <>
+          {/* Back Button */}
+          {onBack && (
+            <button
+              onClick={onBack}
+              style={{
+                position: 'absolute',
+                top: '16px',
+                left: '16px',
+                padding: '10px 20px',
+                backgroundColor: '#333',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '14px',
+                cursor: 'pointer',
+                zIndex: 1000
+              }}
+            >
+              ← Back to Choices
+            </button>
+          )}
+
+          {/* Show user choices if available */}
+          {userAnswers && Object.keys(userAnswers).length > 0 && (
+            <div style={{
+              position: 'absolute',
+              top: '16px',
+              right: '16px',
+              backgroundColor: 'rgba(255,255,255,0.9)',
+              padding: '12px',
+              borderRadius: '8px',
+              fontSize: '12px',
+              zIndex: 1000
+            }}>
+              <strong>Your choices:</strong>
+              {userAnswers.character && <div>👤 {userAnswers.character}</div>}
+              {userAnswers.music && <div>🎵 {userAnswers.music}</div>}
+              {userAnswers.background && <div>🖼️ {userAnswers.background}</div>}
+            </div>
+          )}
+
           {/* Player */}
           <Sprite x={position.x} y={position.y} color="red" size={SPRITE_SIZE} />
 
@@ -88,20 +163,6 @@ function MainGame({ userAnswers: _userAnswers, onBack }: MainGameProps) {
           {staticSprites.map((sprite, i) => (
             <Sprite key={i} x={sprite.x} y={sprite.y} color={sprite.color} size={SPRITE_SIZE} />
           ))}
-          
-          {/* Back Button (using onBack prop if provided) */}
-          <button 
-            onClick={onBack}
-            style={{
-              position: 'absolute',
-              top: '10px',
-              left: '10px',
-              padding: '10px',
-              zIndex: 50
-            }}
-          >
-            Back
-          </button>
         </>
       )}
     </div>
