@@ -65,7 +65,7 @@ function App() {
     <div style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden', backgroundColor: '#f0f0f0' }}>
       {/* Player */}
       <Sprite x={position.x} y={position.y} color="red" size={SPRITE_SIZE} />
-      
+
       {/* Static Sprites */}
       {staticSprites.map((sprite, i) => (
         <Sprite key={i} x={sprite.x} y={sprite.y} color={sprite.color} size={SPRITE_SIZE} />
@@ -99,7 +99,7 @@ function App() {
           }}>
             <h2>{activeSprite.title}</h2>
             <p>You found a sprite!</p>
-            <button 
+            <button
               onClick={() => {
                 setActiveMenu(null)
                 // Teleport slightly away or ensure we don't get stuck in loop?
