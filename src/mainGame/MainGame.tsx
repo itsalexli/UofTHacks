@@ -4,6 +4,7 @@ import { useInputController } from '../shared/useInputController'
 import { Sprite } from '../shared/Sprite'
 import { staticSprites, SPRITE_SIZE } from './gameConfig'
 import type { UserAnswers } from '../ChoosingGame/MainChoosingGame'
+import { matchBackground, type BackgroundImage } from './backgroundMatcher'
 
 interface MainGameProps {
   userAnswers?: UserAnswers;
@@ -13,7 +14,25 @@ interface MainGameProps {
 function MainGame({ userAnswers, onBack }: MainGameProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
+  const [background, setBackground] = useState<BackgroundImage | null>(null)
+  const [isLoadingBg, setIsLoadingBg] = useState(false)
   const keysPressed = useInputController()
+
+  // Match background on mount based on user's answer
+  useEffect(() => {
+    if (userAnswers?.background) {
+      setIsLoadingBg(true)
+      matchBackground(userAnswers.background)
+        .then(matched => {
+          setBackground(matched)
+          setIsLoadingBg(false)
+        })
+        .catch(err => {
+          console.error('Background matching failed:', err)
+          setIsLoadingBg(false)
+        })
+    }
+  }, [userAnswers?.background])
 
   // Game Loop
   useEffect(() => {
@@ -31,8 +50,6 @@ function MainGame({ userAnswers, onBack }: MainGameProps) {
           yp + SPRITE_SIZE > sprite.y
         ) {
           setActiveMenu(sprite.id)
-          // Optional: Bounce back slightly to avoid immediate re-trigger on close?
-          // For now, simpler is fine, but we might want to ensure we don't get stuck.
         }
       }
     }
@@ -51,8 +68,6 @@ function MainGame({ userAnswers, onBack }: MainGameProps) {
         newX = Math.max(0, Math.min(newX, window.innerWidth - SPRITE_SIZE));
         newY = Math.max(0, Math.min(newY, window.innerHeight - SPRITE_SIZE));
 
-        // Collision Check uses PREDICTED position to stop movement?
-        // Or reactive? Reactive means we overlap. Let's stick effectively to reactive trigger.
         checkCollision(newX, newY);
 
         return { x: newX, y: newY };
@@ -64,12 +79,44 @@ function MainGame({ userAnswers, onBack }: MainGameProps) {
     animationFrameId = requestAnimationFrame(gameLoop);
     return () => cancelAnimationFrame(animationFrameId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeMenu]); // Re-run effect when activeMenu changes (to start/stop loop)
+  }, [activeMenu]);
 
   const activeSprite = staticSprites.find(s => s.id === activeMenu);
 
+  // Build background style
+  const backgroundStyle: React.CSSProperties = {
+    width: '100vw',
+    height: '100vh',
+    position: 'relative',
+    overflow: 'hidden',
+    backgroundColor: '#f0f0f0',
+    ...(background && {
+      backgroundImage: `url(/src/assets/backgrounds/${background.filename})`,
+      backgroundSize: 'contain',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+    })
+  }
+
   return (
-    <div style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden', backgroundColor: '#f0f0f0' }}>
+    <div style={backgroundStyle}>
+      {/* Loading indicator */}
+      {isLoadingBg && (
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          color: 'white',
+          padding: '20px 40px',
+          borderRadius: '12px',
+          zIndex: 2000
+        }}>
+          🎨 Matching your background...
+        </div>
+      )}
+
       {/* Back Button */}
       {onBack && (
         <button
