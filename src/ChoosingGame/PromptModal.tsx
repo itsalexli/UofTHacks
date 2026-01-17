@@ -16,6 +16,18 @@ export interface PromptModalProps {
     height?: string;
     /** Optional layout variant */
     layout?: 'default' | 'split';
+    /** Optional callback when input changes */
+    onInputChange?: (value: string) => void;
+    /** Optional content to render in the left pane (split layout only) */
+    leftPaneContent?: React.ReactNode;
+    /** Optional content to render in the right pane */
+    rightPaneContent?: React.ReactNode;
+    /** Custom label for the submit button */
+    submitLabel?: string;
+    /** Whether to show loading state */
+    isLoading?: boolean;
+    /** Whether to clear input on submit (default true) */
+    clearOnSubmit?: boolean;
 }
 
 export function PromptModal({
@@ -26,19 +38,34 @@ export function PromptModal({
     width,
     height,
     layout = 'default',
+    onInputChange,
+    leftPaneContent,
+    rightPaneContent,
+    submitLabel = 'Submit',
+    isLoading = false,
+    clearOnSubmit = true,
 }: PromptModalProps) {
     const [answer, setAnswer] = useState('');
     const [answerBeforeDictation, setAnswerBeforeDictation] = useState('');
 
     const handleSubmit = () => {
+        if (isLoading) return;
         onSubmit(answer);
-        setAnswer('');
+        if (clearOnSubmit) {
+            setAnswer('');
+        }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && e.metaKey) {
             handleSubmit();
         }
+    };
+    
+    const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const newValue = e.target.value;
+        setAnswer(newValue);
+        onInputChange?.(newValue);
     };
 
     const styles: Record<string, React.CSSProperties> = {
@@ -95,6 +122,10 @@ export function PromptModal({
             width: '45%',
             backgroundColor: 'black',
             height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden',
         },
         rightPane: {
             flex: 1,
@@ -140,13 +171,17 @@ export function PromptModal({
             padding: '12px 24px',
             borderRadius: '8px',
             border: 'none',
-            backgroundColor: '#4a90d9',
+            backgroundColor: isLoading ? '#ccc' : '#4a90d9',
             color: 'white',
             fontSize: '16px',
             fontWeight: 600,
-            cursor: 'pointer',
+            cursor: isLoading ? 'wait' : 'pointer',
             marginTop: '16px',
             width: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '8px'
         },
     };
 
@@ -161,17 +196,20 @@ export function PromptModal({
                     <textarea
                         style={styles.textarea}
                         value={answer}
-                        onChange={(e) => setAnswer(e.target.value)}
+                        onChange={handleInputChange}
                         onKeyDown={handleKeyDown}
                         placeholder={placeholder}
                         autoFocus
+                        disabled={isLoading}
                     />
                     <div style={styles.buttonContainer}>
                         <DictationButton
                             onDictationStart={() => setAnswerBeforeDictation(answer)}
                             onTranscriptChange={(text) => {
                                 const separator = answerBeforeDictation && !answerBeforeDictation.endsWith(' ') ? ' ' : '';
-                                setAnswer(answerBeforeDictation + separator + text);
+                                const newVal = answerBeforeDictation + separator + text;
+                                setAnswer(newVal);
+                                onInputChange?.(newVal);
                             }}
                             size={48}
                         />
@@ -179,8 +217,8 @@ export function PromptModal({
                 </div>
 
                 {/* Submit Button */}
-                <button style={styles.submitButton} onClick={handleSubmit}>
-                    Submit
+                <button style={styles.submitButton} onClick={handleSubmit} disabled={isLoading}>
+                    {isLoading ? 'Loading...' : submitLabel}
                 </button>
             </div>
         </>
@@ -196,8 +234,11 @@ export function PromptModal({
 
                 {layout === 'split' ? (
                     <div style={styles.splitContainer}>
-                        <div style={styles.leftPane}></div>
+                        <div style={styles.leftPane}>
+                            {leftPaneContent}
+                        </div>
                         <div style={styles.rightPane}>
+                            {rightPaneContent}
                             {renderContent()}
                         </div>
                     </div>

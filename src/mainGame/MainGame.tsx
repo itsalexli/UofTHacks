@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import '../App.css'
 import { useInputController } from '../shared/useInputController'
 import { Sprite } from '../shared/Sprite'
@@ -189,25 +189,7 @@ function MainGame({ userAnswers, onBack }: MainGameProps) {
             </button>
           )}
 
-          {/* Show user choices if available */}
-          {userAnswers && Object.keys(userAnswers).length > 0 && (
-            <div style={{
-              position: 'absolute',
-              top: '16px',
-              right: '16px',
-              backgroundColor: 'rgba(255,255,255,0.9)',
-              padding: '12px',
-              borderRadius: '8px',
-              fontSize: '12px',
-              zIndex: 1000
-            }}>
-              {isLoadingBg && <div style={{ marginBottom: '8px', color: '#666' }}>Creating world... 🎨</div>}
-              <strong>Your choices:</strong>
-              {userAnswers.character && <div>👤 {userAnswers.character}</div>}
-              {userAnswers.music && <div>🎵 {userAnswers.music}</div>}
-              {userAnswers.background && <div>🖼️ {userAnswers.background}</div>}
-            </div>
-          )}
+
 
           {/* Player */}
           <Sprite 

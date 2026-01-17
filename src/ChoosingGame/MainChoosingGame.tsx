@@ -11,6 +11,10 @@ import progressBar3 from '../assets/images/progressBar3.png'
 import choosingBackground from '../assets/images/choosingBackground.png'
 import defaultLeftImg from '../assets/defaultleft.png'
 import defaultRightImg from '../assets/defaultright.png'
+import hkLeft from '../assets/hellokitty/hk-left.png'
+import hkRight from '../assets/hellokitty/hk-right.png'
+import hkUp from '../assets/hellokitty/hk-up.png'
+import hkDown from '../assets/hellokitty/hk-down.png'
 
 // Progress bar images array (0 = empty, 3 = full)
 const progressBarImages = [progressBar0, progressBar1, progressBar2, progressBar3];
@@ -28,8 +32,12 @@ interface ChoosingGameProps {
 
 function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
   const [position, setPosition] = useState({ x: 575, y: 725 })
-  const [direction, setDirection] = useState<'left' | 'right'>('right')
+  const [direction, setDirection] = useState<'left' | 'right' | 'up' | 'down'>('right')
+  const [characterType, setCharacterType] = useState<'default' | 'hellokitty'>('default')
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
+  const [currentInput, setCurrentInput] = useState('')
+  const [modalStep, setModalStep] = useState<'input' | 'loading' | 'review'>('input')
+  const [selectedCostume, setSelectedCostume] = useState<string>(hkDown)
   const [answers, setAnswers] = useState<UserAnswers>({})
   const keysPressed = useInputController()
 
@@ -50,6 +58,9 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
           yp + SPRITE_SIZE > sprite.y
         ) {
           setActiveMenu(sprite.id)
+          setCurrentInput('') // Reset input when opening menu
+          setModalStep('input')
+          setSelectedCostume(hkDown) // Reset costume selection
         }
       }
     }
@@ -59,8 +70,14 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
         let newX = prev.x;
         let newY = prev.y;
 
-        if (keysPressed.current.has('ArrowUp')) newY -= speed;
-        if (keysPressed.current.has('ArrowDown')) newY += speed;
+        if (keysPressed.current.has('ArrowUp')) {
+          newY -= speed;
+          setDirection('up');
+        }
+        if (keysPressed.current.has('ArrowDown')) {
+          newY += speed;
+          setDirection('down');
+        }
         if (keysPressed.current.has('ArrowLeft')) {
           newX -= speed;
           setDirection('left');
@@ -90,6 +107,9 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
 
   const handleClose = (sprite: StaticSprite) => {
     setActiveMenu(null)
+    setCurrentInput('')
+    setModalStep('input')
+    setSelectedCostume(hkDown)
     // Nudge player away to prevent immediate re-collision
     setPosition(prev => ({
       x: prev.x < sprite.x ? prev.x - 10 : prev.x + 10,
@@ -98,14 +118,77 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
   }
 
   const handleSubmit = (sprite: StaticSprite, answer: string) => {
+    // Special flow for character selection
+    if (sprite.id === 'character') {
+      if (modalStep === 'input') {
+        setModalStep('loading')
+        // Simulate loading then show result
+        setTimeout(() => {
+          setModalStep('review')
+        }, 1500)
+        return // Don't close yet
+      }
+      
+      if (modalStep === 'loading') return // Ignore clicks during loading
+      
+      // If modalStep === 'review', proceed to confirm/save
+    }
+
     // Save the answer based on sprite id
     setAnswers(prev => ({
       ...prev,
       [sprite.id]: answer
     }))
+    
+    // Check for Hello Kitty easter egg
+    if (sprite.id === 'character') {
+      const lowerAnswer = answer.toLowerCase();
+      if (lowerAnswer.includes('hello kitty') || lowerAnswer.includes('hellokitty') || lowerAnswer.includes('kitty')) {
+        setCharacterType('hellokitty');
+      } else {
+        setCharacterType('default');
+      }
+    }
+
     console.log(`Answer for ${sprite.id}:`, answer)
     handleClose(sprite)
   }
+
+  // Easter Egg Content Logic
+  // Only show visuals if we are in the 'review' step
+  const showHelloKittyVisuals = activeSprite?.id === 'character' && 
+    modalStep === 'review' &&
+    (currentInput.toLowerCase().includes('hello kitty') || 
+     currentInput.toLowerCase().includes('hellokitty') || 
+     currentInput.toLowerCase().includes('kitty'));
+
+  const leftPaneContent = showHelloKittyVisuals ? (
+    <img src={selectedCostume} alt="Hello Kitty" style={{ width: '80%', height: 'auto', objectFit: 'contain' }} />
+  ) : undefined;
+
+  const costumes = [hkDown, hkLeft, hkUp, hkRight];
+
+  const rightPaneContent = showHelloKittyVisuals ? (
+    <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', justifyContent: 'center' }}>
+      {costumes.map((costume, index) => (
+        <img 
+          key={index}
+          src={costume} 
+          alt={`Costume ${index}`} 
+          style={{ 
+            width: '60px', 
+            height: '60px', 
+            objectFit: 'contain',
+            cursor: 'pointer',
+            border: selectedCostume === costume ? '2px solid #4a90d9' : '2px solid transparent',
+            borderRadius: '8px',
+            padding: '4px'
+          }}
+          onClick={() => setSelectedCostume(costume)}
+        />
+      ))}
+    </div>
+  ) : undefined;
 
   return (
     <div style={{
@@ -131,7 +214,14 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
           y={position.y}
           color="red"
           size={SPRITE_SIZE}
-          image={direction === 'left' ? defaultLeftImg : defaultRightImg}
+          image={
+            characterType === 'hellokitty'
+              ? (direction === 'up' ? hkUp
+                : direction === 'down' ? hkDown
+                : direction === 'left' ? hkLeft
+                : hkRight)
+              : (direction === 'left' ? defaultLeftImg : defaultRightImg)
+          }
         />
 
         {/* Static Sprites */}
@@ -207,27 +297,16 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
             width={activeSprite.id === 'character' ? '80%' : undefined}
             height={activeSprite.id === 'character' ? '80%' : undefined}
             layout={activeSprite.id === 'character' ? 'split' : 'default'}
+            onInputChange={setCurrentInput}
+            leftPaneContent={leftPaneContent}
+            rightPaneContent={rightPaneContent}
+            isLoading={modalStep === 'loading'}
+            submitLabel={modalStep === 'review' ? 'Confirm' : 'Submit'}
+            clearOnSubmit={activeSprite.id !== 'character'}
           />
         )}
 
-        {/* Debug: Show collected answers */}
-        {Object.keys(answers).length > 0 && (
-          <div style={{
-            position: 'absolute',
-            bottom: '16px',
-            left: '16px',
-            backgroundColor: 'rgba(255,255,255,0.9)',
-            padding: '12px',
-            borderRadius: '8px',
-            fontSize: '12px',
-            maxWidth: '300px'
-          }}>
-            <strong>Your choices:</strong>
-            {answers.character && <div>👤 Character: {answers.character}</div>}
-            {answers.music && <div>🎵 Music: {answers.music}</div>}
-            {answers.background && <div>🖼️ Background: {answers.background}</div>}
-          </div>
-        )}
+
 
         {/* Progress Bar - Dynamic based on answers submitted */}
         <img
