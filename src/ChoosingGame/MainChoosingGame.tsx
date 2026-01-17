@@ -1,33 +1,38 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import '../App.css'
+import { useInputController } from './useInputController'
+import { Sprite } from './Sprite'
 
 function App() {
   const [position, setPosition] = useState({ x: 0, y: 0 })
-  const keysPressed = useRef(new Set<string>())
+  const keysPressed = useInputController()
   
-  // Track keys
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-        e.preventDefault();
-      }
-      keysPressed.current.add(e.key);
-    }
-    const handleKeyUp = (e: KeyboardEvent) => keysPressed.current.delete(e.key)
-    
-    window.addEventListener('keydown', handleKeyDown)
-    window.addEventListener('keyup', handleKeyUp)
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-      window.removeEventListener('keyup', handleKeyUp)
-    }
-  }, [])
+  // Static blue squares
+  const blueSquares = [
+    { x: 200, y: 150 },
+    { x: 400, y: 150 },
+    { x: 200, y: 350 },
+    { x: 400, y: 350 },
+  ]
+  const cubeSize = 50
 
   // Game Loop
   useEffect(() => {
     let animationFrameId: number;
-    const speed = 5; // pixels per frame (smooth)
-    const cubeSize = 50;
+    const speed = 5; // pixels per frame
+
+    const checkCollision = (xp: number, yp: number) => {
+      for (const square of blueSquares) {
+        if (
+          xp < square.x + cubeSize &&
+          xp + cubeSize > square.x &&
+          yp < square.y + cubeSize &&
+          yp + cubeSize > square.y
+        ) {
+          console.log("hello")
+        }
+      }
+    }
 
     const gameLoop = () => {
       setPosition(prev => {
@@ -39,11 +44,12 @@ function App() {
         if (keysPressed.current.has('ArrowLeft')) newX -= speed;
         if (keysPressed.current.has('ArrowRight')) newX += speed;
 
-        // Collision Detection (Boundary Check)
-        // Ensure newX is between 0 and (windowWidth - cubeSize)
-        // Ensure newY is between 0 and (windowHeight - cubeSize)
+        // Boundary Check
         newX = Math.max(0, Math.min(newX, window.innerWidth - cubeSize));
         newY = Math.max(0, Math.min(newY, window.innerHeight - cubeSize));
+
+        // Collision Check
+        checkCollision(newX, newY);
 
         return { x: newX, y: newY };
       });
@@ -53,24 +59,21 @@ function App() {
 
     animationFrameId = requestAnimationFrame(gameLoop);
     return () => cancelAnimationFrame(animationFrameId);
-  }, []);
+  }, []); // blueSquares is constant, so safe to omit from dependency if we want strict behaviour, but best practice is to include if not stable. Here they are defined in render but static content effectively.
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden', backgroundColor: '#f0f0f0' }}>
-      <div 
-        style={{
-          width: '50px',
-          height: '50px',
-          backgroundColor: 'red',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          transform: `translate(${position.x}px, ${position.y}px)`,
-          // Removed transition for instant response in game loop
-        }}
-      />
+      {/* Player */}
+      <Sprite x={position.x} y={position.y} color="red" size={cubeSize} />
+      
+      {/* Blue Squares */}
+      {blueSquares.map((sq, i) => (
+        <Sprite key={i} x={sq.x} y={sq.y} color="blue" size={cubeSize} />
+      ))}
     </div>
   )
 }
 
 export default App
+
+
