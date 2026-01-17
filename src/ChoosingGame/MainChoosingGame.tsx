@@ -8,6 +8,7 @@ import progressBar0 from '../assets/images/progressBar0.png'
 import progressBar1 from '../assets/images/progressBar1.png'
 import progressBar2 from '../assets/images/progressBar2.png'
 import progressBar3 from '../assets/images/progressBar3.png'
+import choosingBackground from '../assets/images/choosingBackground.png'
 import defaultLeftImg from '../assets/defaultleft.png'
 import defaultRightImg from '../assets/defaultright.png'
 
@@ -26,7 +27,7 @@ interface ChoosingGameProps {
 }
 
 function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
-  const [position, setPosition] = useState({ x: 0, y: 0 })
+  const [position, setPosition] = useState({ x: 575, y: 725 })
   const [direction, setDirection] = useState<'left' | 'right'>('right')
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [answers, setAnswers] = useState<UserAnswers>({})
@@ -37,14 +38,15 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
     if (activeMenu) return; // Pause game loop when menu is open
 
     let animationFrameId: number;
-    const speed = 5; // pixels per frame
+    const speed = 4; // pixels per frame
 
     const checkCollision = (xp: number, yp: number) => {
       for (const sprite of staticSprites) {
+        const spriteSize = sprite.size || SPRITE_SIZE / 1.5;
         if (
-          xp < sprite.x + SPRITE_SIZE &&
+          xp < sprite.x + spriteSize &&
           xp + SPRITE_SIZE > sprite.x &&
-          yp < sprite.y + SPRITE_SIZE &&
+          yp < sprite.y + spriteSize &&
           yp + SPRITE_SIZE > sprite.y
         ) {
           setActiveMenu(sprite.id)
@@ -106,121 +108,138 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
   }
 
   return (
-    <div style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden', backgroundColor: '#f0f0f0' }}>
-      {/* Player */}
-      <Sprite
-        x={position.x}
-        y={position.y}
-        color="red"
-        size={SPRITE_SIZE}
-        image={direction === 'left' ? defaultLeftImg : defaultRightImg}
-      />
+    <div style={{
+      width: '100vw',
+      height: '100vh',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: '#1a1a2e'
+    }}>
+      <div style={{
+        width: '1200px',
+        height: '800px',
+        position: 'relative',
+        overflow: 'hidden',
+        backgroundImage: `url(${choosingBackground})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}>
+        {/* Player */}
+        <Sprite
+          x={position.x}
+          y={position.y}
+          color="red"
+          size={SPRITE_SIZE}
+          image={direction === 'left' ? defaultLeftImg : defaultRightImg}
+        />
 
-      {/* Static Sprites */}
-      {staticSprites.map((sprite) => (
-        <Sprite key={sprite.id} x={sprite.x} y={sprite.y} color={sprite.color} size={SPRITE_SIZE} />
-      ))}
+        {/* Static Sprites */}
+        {staticSprites.map((sprite) => (
+          <Sprite key={sprite.id} x={sprite.x} y={sprite.y} color={sprite.color} size={sprite.size || SPRITE_SIZE} image={sprite.image} />
+        ))}
 
-      {/* Portal Modal (no text input) */}
-      {activeMenu && activeSprite?.isPortal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          backgroundColor: 'rgba(0,0,0,0.6)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 2000
-        }}>
+        {/* Portal Modal (no text input) */}
+        {activeMenu && activeSprite?.isPortal && (
           <div style={{
-            backgroundColor: 'white',
-            padding: '32px',
-            borderRadius: '16px',
-            textAlign: 'center',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 2000
           }}>
-            <h2 style={{ margin: '0 0 16px', color: '#333' }}>🌀 Portal</h2>
-            <p style={{ color: '#666', marginBottom: '20px' }}>Ready to enter your adventure?</p>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-              <button
-                onClick={() => handleClose(activeSprite)}
-                style={{
-                  padding: '12px 24px',
-                  backgroundColor: '#666',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  cursor: 'pointer'
-                }}
-              >
-                Close
-              </button>
-              <button
-                onClick={() => onEnterPortal?.(answers)}
-                style={{
-                  padding: '12px 24px',
-                  backgroundColor: activeSprite.color,
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  cursor: 'pointer',
-                  fontWeight: 'bold'
-                }}
-              >
-                Enter Portal 🚀
-              </button>
+            <div style={{
+              backgroundColor: 'white',
+              padding: '32px',
+              borderRadius: '16px',
+              textAlign: 'center',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
+            }}>
+              <h2 style={{ margin: '0 0 16px', color: '#333' }}>🌀 Portal</h2>
+              <p style={{ color: '#666', marginBottom: '20px' }}>Ready to enter your adventure?</p>
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                <button
+                  onClick={() => handleClose(activeSprite)}
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: '#666',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => onEnterPortal?.(answers)}
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: activeSprite.color,
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  Enter Portal 🚀
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Question Modal with text/dictation input */}
-      {activeMenu && activeSprite && !activeSprite.isPortal && (
-        <PromptModal
-          prompt={activeSprite.prompt}
-          onSubmit={(answer) => handleSubmit(activeSprite, answer)}
-          onClose={() => handleClose(activeSprite)}
-          placeholder="Type your answer or use the mic..."
+        {/* Question Modal with text/dictation input */}
+        {activeMenu && activeSprite && !activeSprite.isPortal && (
+          <PromptModal
+            prompt={activeSprite.prompt}
+            onSubmit={(answer) => handleSubmit(activeSprite, answer)}
+            onClose={() => handleClose(activeSprite)}
+            placeholder="Type your answer or use the mic..."
+          />
+        )}
+
+        {/* Debug: Show collected answers */}
+        {Object.keys(answers).length > 0 && (
+          <div style={{
+            position: 'absolute',
+            bottom: '16px',
+            left: '16px',
+            backgroundColor: 'rgba(255,255,255,0.9)',
+            padding: '12px',
+            borderRadius: '8px',
+            fontSize: '12px',
+            maxWidth: '300px'
+          }}>
+            <strong>Your choices:</strong>
+            {answers.character && <div>👤 Character: {answers.character}</div>}
+            {answers.music && <div>🎵 Music: {answers.music}</div>}
+            {answers.background && <div>🖼️ Background: {answers.background}</div>}
+          </div>
+        )}
+
+        {/* Progress Bar - Dynamic based on answers submitted */}
+        <img
+          src={progressBarImages[Math.min(Object.keys(answers).length, 3)]}
+          alt={`Progress: ${Object.keys(answers).length}/3`}
+          style={{
+            position: 'absolute',
+            top: '45px',
+            left: '20px',
+            width: '200px',
+            zIndex: 50,
+            pointerEvents: 'none'
+          }}
         />
-      )}
-
-      {/* Debug: Show collected answers */}
-      {Object.keys(answers).length > 0 && (
-        <div style={{
-          position: 'absolute',
-          bottom: '16px',
-          left: '16px',
-          backgroundColor: 'rgba(255,255,255,0.9)',
-          padding: '12px',
-          borderRadius: '8px',
-          fontSize: '12px',
-          maxWidth: '300px'
-        }}>
-          <strong>Your choices:</strong>
-          {answers.character && <div>👤 Character: {answers.character}</div>}
-          {answers.music && <div>🎵 Music: {answers.music}</div>}
-          {answers.background && <div>🖼️ Background: {answers.background}</div>}
-        </div>
-      )}
-
-      {/* Progress Bar - Dynamic based on answers submitted */}
-      <img
-        src={progressBarImages[Math.min(Object.keys(answers).length, 3)]}
-        alt={`Progress: ${Object.keys(answers).length}/3`}
-        style={{
-          position: 'absolute',
-          top: '20px',
-          left: '20px',
-          width: '200px',
-          zIndex: 50,
-          pointerEvents: 'none'
-        }}
-      />
+      </div>
     </div>
   )
 }
