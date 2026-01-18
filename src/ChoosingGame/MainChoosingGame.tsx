@@ -181,8 +181,8 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
                     left: data.paths.left,
                     right: data.paths.right
                 });
-                setCharacterType('custom');
-                setSelectedCostume(data.paths.front);
+                // REMOVED: setCharacterType('custom'); -- Wait for confirmation!
+                 setSelectedCostume(data.paths.front);
                 // Ready for review! Checkmark will appear.
             } else {
                 console.error('Generation failed:', data.error);
@@ -218,7 +218,8 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
       const lowerAnswer = answer.toLowerCase();
       if (lowerAnswer.includes('hello kitty') || lowerAnswer.includes('hellokitty') || lowerAnswer.includes('kitty')) {
         setCharacterType('hellokitty');
-      } else if (generatedSprites) {
+      } else if (generatedSprites && (modalStep === 'review' || answers.generatedSprites)) {
+        // Only switch to custom if we are confirming review OR if we already have it saved
         setCharacterType('custom');
       } else {
         setCharacterType('default');
@@ -242,7 +243,8 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
   let costumes: string[] = [];
   if (isHelloKitty) {
       costumes = [hkDown, hkLeft, hkUp, hkRight];
-  } else if (characterType === 'custom') { // Check type directly for costumes list, transient state is enough for review
+  } else if (characterType === 'custom' || (modalStep === 'review' && generatedSprites)) { 
+      // Show custom sprites if confirmed OR if we are reviewing them
       const sprites = generatedSprites || answers.generatedSprites;
       if (sprites) {
         costumes = [sprites.front, sprites.left, sprites.back, sprites.right];
