@@ -2,10 +2,20 @@ import { useState, useEffect, useRef } from 'react'
 import '../App.css'
 import { useInputController } from '../shared/useInputController'
 import { Sprite } from '../shared/Sprite'
-import { staticSprites as initialSprites, SPRITE_SIZE, type StaticSprite } from './gameConfig'
+import { staticSprites as initialSprites, SPRITE_SIZE, PLAYER_SIZE, type StaticSprite } from './gameConfig'
 import type { UserAnswers } from '../ChoosingGame/MainChoosingGame'
 import { BattleScreen } from './BattleScreen'
 import { matchBackground, type BackgroundImage } from './backgroundMatcher'
+
+// Hello Kitty Assets
+import hkDown from '../assets/hellokitty/hk-down.png'
+import hkDownWalk from '../assets/hellokitty/hk-down-walking.png'
+import hkUp from '../assets/hellokitty/hk-up.png'
+import hkUpWalk from '../assets/hellokitty/hk-up-walking.png'
+import hkLeft from '../assets/hellokitty/hk-left.png'
+import hkLeftWalk from '../assets/hellokitty/hk-left-walking.png'
+import hkRight from '../assets/hellokitty/hk-right.png'
+import hkRightWalk from '../assets/hellokitty/hk-right-walking.png'
 import enemy1Img from '../assets/images/enemy1.png'
 import enemy2Img from '../assets/images/enemy2.png'
 import enemy3Img from '../assets/images/enemy3.png'
@@ -21,6 +31,10 @@ interface MainGameProps {
 
 function MainGame({ userAnswers, onBack }: MainGameProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 })
+  const [direction, setDirection] = useState<'up' | 'down' | 'left' | 'right'>('down')
+  const [isMoving, setIsMoving] = useState(false)
+  const [frameToggle, setFrameToggle] = useState(false) // For animation
+
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [background, setBackground] = useState<BackgroundImage | null>(null)
   const [isLoadingBg, setIsLoadingBg] = useState(false)
@@ -142,19 +156,56 @@ function MainGame({ userAnswers, onBack }: MainGameProps) {
       }
     }
 
+    // Animation Frame Counter
+    let frameCount = 0;
+    let prevDirection: 'up' | 'down' | 'left' | 'right' = 'down';
+    let prevMoving = false;
+
     const gameLoop = () => {
+      // Toggle animation frame every ~200ms (assuming 60fps, equal to ~12 frames)
+      frameCount++;
+      if (frameCount >= 10) {
+        frameCount = 0;
+        setFrameToggle(prev => !prev);
+      }
+
       setPosition(prev => {
         let newX = prev.x;
         let newY = prev.y;
+        let isNowMoving = false;
+        let newDir = prevDirection; // Temporary var to track direction change in loop
 
-        if (keysPressed.current.has('ArrowUp')) newY -= speed;
-        if (keysPressed.current.has('ArrowDown')) newY += speed;
-        if (keysPressed.current.has('ArrowLeft')) newX -= speed;
-        if (keysPressed.current.has('ArrowRight')) newX += speed;
+        if (keysPressed.current.has('ArrowUp')) {
+          newY -= speed;
+          newDir = 'up';
+          isNowMoving = true;
+        }
+        if (keysPressed.current.has('ArrowDown')) {
+          newY += speed;
+          newDir = 'down';
+          isNowMoving = true;
+        }
+        if (keysPressed.current.has('ArrowLeft')) {
+          newX -= speed;
+          newDir = 'left';
+          isNowMoving = true;
+        }
+        if (keysPressed.current.has('ArrowRight')) {
+          newX += speed;
+          newDir = 'right';
+          isNowMoving = true;
+        }
+
+        // Only update state if changed to avoid excessive renders
+        if (newDir !== prevDirection) setDirection(newDir);
+        if (isNowMoving !== prevMoving) setIsMoving(isNowMoving);
+
+        prevDirection = newDir;
+        prevMoving = isNowMoving;
 
         // Boundary Check
-        newX = Math.max(0, Math.min(newX, window.innerWidth - SPRITE_SIZE));
-        newY = Math.max(0, Math.min(newY, window.innerHeight - SPRITE_SIZE));
+        newX = Math.max(0, Math.min(newX, window.innerWidth - PLAYER_SIZE));
+        newY = Math.max(0, Math.min(newY, window.innerHeight - PLAYER_SIZE));
 
         checkCollision(newX, newY);
 
@@ -224,8 +275,10 @@ function MainGame({ userAnswers, onBack }: MainGameProps) {
     <div style={backgroundStyle}>
       {/* Battle Screen Overlay takes full precedence if active */}
       {activeMenu && activeSprite ? (
-        <BattleScreen 
+        <BattleScreen
           enemy={activeSprite}
+          learningMaterial={userAnswers.learningMaterial}
+          ageLevel={userAnswers.ageLevel}
           inventoryItems={inventoryItems}
           playerHP={playerHP}
           setPlayerHP={setPlayerHP}
@@ -332,7 +385,27 @@ function MainGame({ userAnswers, onBack }: MainGameProps) {
           )}
 
           {/* Player */}
-          <Sprite x={position.x} y={position.y} color="red" size={SPRITE_SIZE} />
+          <Sprite 
+            x={position.x} 
+            y={position.y} 
+            color="red" 
+            size={userAnswers.generatedSprites ? PLAYER_SIZE * 1.5 : PLAYER_SIZE}
+            image={
+              userAnswers.generatedSprites
+                ? (direction === 'up' ? userAnswers.generatedSprites.back
+                  : direction === 'left' ? userAnswers.generatedSprites.left
+                  : direction === 'right' ? userAnswers.generatedSprites.right
+                  : userAnswers.generatedSprites.front)
+                : (direction === 'up' 
+                  ? (isMoving && frameToggle ? hkUpWalk : hkUp)
+                  : direction === 'left'
+                  ? (isMoving && frameToggle ? hkLeftWalk : hkLeft)
+                  : direction === 'right'
+                  ? (isMoving && frameToggle ? hkRightWalk : hkRight)
+                  : (isMoving && frameToggle ? hkDownWalk : hkDown))
+            }
+
+          />
 
           {/* Static Sprites */}
           {gameSprites.map((sprite, i) => (

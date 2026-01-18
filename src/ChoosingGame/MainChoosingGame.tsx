@@ -4,15 +4,35 @@ import { useInputController } from '../shared/useInputController'
 import { Sprite } from '../shared/Sprite'
 import { staticSprites, SPRITE_SIZE, type StaticSprite } from './gameConfig'
 import { PromptModal } from './PromptModal'
-import progressBarImg from '../assets/images/progressbar.png'
+import { AGE_LEVELS, type AgeLevel } from '../mainGame/questionBank'
+import progressBar0 from '../assets/images/progressBar0.png'
+import progressBar1 from '../assets/images/progressBar1.png'
+import progressBar2 from '../assets/images/progressBar2.png'
+import progressBar3 from '../assets/images/progressBar3.png'
+import choosingBackground from '../assets/images/choosingBackground.png'
 import defaultLeftImg from '../assets/images/defaultleft.png'
 import defaultRightImg from '../assets/images/defaultright.png'
+import hkLeft from '../assets/hellokitty/hk-left.png'
+import hkRight from '../assets/hellokitty/hk-right.png'
+import hkUp from '../assets/hellokitty/hk-up.png'
+import hkDown from '../assets/hellokitty/hk-down.png'
+
+// Progress bar images array (0 = empty, 3 = full)
+const progressBarImages = [progressBar0, progressBar1, progressBar2, progressBar3];
 
 // Store user answers
 export interface UserAnswers {
   character?: string;
   music?: string;
   background?: string;
+  generatedSprites?: {
+    front: string;
+    back: string;
+    left: string;
+    right: string;
+  };
+  learningMaterial?: string;  // Study material for quiz questions
+  ageLevel?: AgeLevel;  // Age-level difficulty for questions
 }
 
 interface ChoosingGameProps {
@@ -20,59 +40,77 @@ interface ChoosingGameProps {
 }
 
 function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
-  const [position, setPosition] = useState({ x: 0, y: 0 })
-  const [direction, setDirection] = useState<'left' | 'right'>('right')
+  const [position, setPosition] = useState({ x: 575, y: 725 })
+  const [direction, setDirection] = useState<'left' | 'right' | 'up' | 'down'>('right')
+  const [characterType, setCharacterType] = useState<'default' | 'hellokitty' | 'custom'>('default')
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
+  const [, setCurrentInput] = useState('')
+  const [modalStep, setModalStep] = useState<'input' | 'loading' | 'review'>('input')
+  const [selectedCostume, setSelectedCostume] = useState<string>(hkDown)
+  const [generatedSprites, setGeneratedSprites] = useState<{ front: string, back: string, left: string, right: string } | null>(null)
   const [answers, setAnswers] = useState<UserAnswers>({})
+  const [learningMaterial, setLearningMaterial] = useState('')
+  const [ageLevel, setAgeLevel] = useState<AgeLevel>('6-7')
   const keysPressed = useInputController()
 
-    // Game Loop
-    useEffect(() => {
-      if (activeMenu) return; // Pause game loop when menu is open
+  // Game Loop
+  useEffect(() => {
+    if (activeMenu) return; // Pause game loop when menu is open
 
-      let animationFrameId: number;
-      const speed = 5; // pixels per frame
+    let animationFrameId: number;
+    const speed = 4; // pixels per frame
 
     const checkCollision = (xp: number, yp: number) => {
       for (const sprite of staticSprites) {
+        const spriteSize = sprite.size || SPRITE_SIZE / 1.5;
         if (
-          xp < sprite.x + SPRITE_SIZE &&
+          xp < sprite.x + spriteSize &&
           xp + SPRITE_SIZE > sprite.x &&
-          yp < sprite.y + SPRITE_SIZE &&
+          yp < sprite.y + spriteSize &&
           yp + SPRITE_SIZE > sprite.y
         ) {
           setActiveMenu(sprite.id)
+          setCurrentInput('') // Reset input when opening menu
+          setModalStep('input')
+          setSelectedCostume(hkDown) // Reset costume selection
+          setGeneratedSprites(null)
         }
       }
     }
 
-      const gameLoop = () => {
-        setPosition(prev => {
-          let newX = prev.x;
-          let newY = prev.y;
+    const gameLoop = () => {
+      setPosition(prev => {
+        let newX = prev.x;
+        let newY = prev.y;
 
-          if (keysPressed.current.has('ArrowUp')) newY -= speed;
-          if (keysPressed.current.has('ArrowDown')) newY += speed;
-          if (keysPressed.current.has('ArrowLeft')) {
-            newX -= speed;
-            setDirection('left');
-          }
-          if (keysPressed.current.has('ArrowRight')) {
-            newX += speed;
-            setDirection('right');
-          }
+        if (keysPressed.current.has('ArrowUp')) {
+          newY -= speed;
+          setDirection('up');
+        }
+        if (keysPressed.current.has('ArrowDown')) {
+          newY += speed;
+          setDirection('down');
+        }
+        if (keysPressed.current.has('ArrowLeft')) {
+          newX -= speed;
+          setDirection('left');
+        }
+        if (keysPressed.current.has('ArrowRight')) {
+          newX += speed;
+          setDirection('right');
+        }
 
-          // Boundary Check
-          newX = Math.max(0, Math.min(newX, window.innerWidth - SPRITE_SIZE));
-          newY = Math.max(0, Math.min(newY, window.innerHeight - SPRITE_SIZE));
+        // Boundary Check
+        newX = Math.max(0, Math.min(newX, window.innerWidth - SPRITE_SIZE));
+        newY = Math.max(0, Math.min(newY, window.innerHeight - SPRITE_SIZE));
 
         checkCollision(newX, newY);
 
-          return { x: newX, y: newY };
-        });
+        return { x: newX, y: newY };
+      });
 
-        animationFrameId = requestAnimationFrame(gameLoop);
-      };
+      animationFrameId = requestAnimationFrame(gameLoop);
+    };
 
     animationFrameId = requestAnimationFrame(gameLoop);
     return () => cancelAnimationFrame(animationFrameId);
@@ -82,6 +120,10 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
 
   const handleClose = (sprite: StaticSprite) => {
     setActiveMenu(null)
+    setCurrentInput('')
+    setModalStep('input')
+    setSelectedCostume(hkDown)
+    setGeneratedSprites(null)
     // Nudge player away to prevent immediate re-collision
     setPosition(prev => ({
       x: prev.x < sprite.x ? prev.x - 10 : prev.x + 10,
@@ -89,132 +131,369 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
     }))
   }
 
-  const handleSubmit = (sprite: StaticSprite, answer: string) => {
+  const handleSubmit = async (sprite: StaticSprite, answer: string) => {
+    // Special flow for character selection
+    if (sprite.id === 'character') {
+      if (modalStep === 'input') {
+        setModalStep('loading')
+        
+        const lowerAnswer = answer.toLowerCase();
+        // Hello Kitty Flow
+        if (lowerAnswer.includes('hello kitty') || lowerAnswer.includes('hellokitty') || lowerAnswer.includes('kitty')) {
+            setTimeout(() => {
+                setModalStep('review')
+                setCharacterType('hellokitty')
+                setSelectedCostume(hkDown)
+            }, 1500)
+            return;
+        }
+
+        // Nano Banana / Gemini Flow
+        try {
+            const response = await fetch('/api/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: answer })
+            });
+            const data = await response.json();
+
+            if (data.success && data.paths) {
+                setGeneratedSprites({
+                    front: data.paths.front,
+                    back: data.paths.back,
+                    left: data.paths.left,
+                    right: data.paths.right
+                });
+                setCharacterType('custom');
+                setSelectedCostume(data.paths.front);
+                setModalStep('review');
+            } else {
+                console.error('Generation failed:', data.error);
+                alert('Failed to generate character. Try again!');
+                setModalStep('input');
+            }
+        } catch (e) {
+            console.error('API Error:', e);
+            alert('Something went wrong contacting Nano Banana!');
+            setModalStep('input');
+        }
+        return; // Don't close yet
+      }
+      
+      if (modalStep === 'loading') return // Ignore clicks during loading
+      
+      // If modalStep === 'review', proceed to confirm/save
+    }
+
     // Save the answer based on sprite id
     setAnswers(prev => ({
       ...prev,
-      [sprite.id]: answer
+      [sprite.id]: answer,
+      // If we generated sprites, save them too
+      ...(sprite.id === 'character' && generatedSprites ? { generatedSprites } : {})
     }))
+
+    // Check for Hello Kitty easter egg or Custom character
+    if (sprite.id === 'character') {
+      const lowerAnswer = answer.toLowerCase();
+      if (lowerAnswer.includes('hello kitty') || lowerAnswer.includes('hellokitty') || lowerAnswer.includes('kitty')) {
+        setCharacterType('hellokitty');
+      } else if (generatedSprites) {
+        setCharacterType('custom');
+      } else {
+        setCharacterType('default');
+      }
+    }
+
     console.log(`Answer for ${sprite.id}:`, answer)
     handleClose(sprite)
   }
 
-    return (
-      <div style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden', backgroundColor: '#f0f0f0' }}>
+  // Easter Egg & Custom Content Logic
+  const isHelloKitty = characterType === 'hellokitty';
+  // const isCustom = characterType === 'custom' && (generatedSprites || answers.generatedSprites);
+  
+  const showVisuals = activeSprite?.id === 'character' && modalStep === 'review';
+
+  const leftPaneContent = showVisuals ? (
+    <img src={selectedCostume} alt="Character Preview" style={{ width: '80%', height: 'auto', objectFit: 'contain', imageRendering: 'pixelated' }} />
+  ) : undefined;
+
+  let costumes: string[] = [];
+  if (isHelloKitty) {
+      costumes = [hkDown, hkLeft, hkUp, hkRight];
+  } else if (characterType === 'custom') { // Check type directly for costumes list, transient state is enough for review
+      const sprites = generatedSprites || answers.generatedSprites;
+      if (sprites) {
+        costumes = [sprites.front, sprites.left, sprites.back, sprites.right];
+      }
+  }
+
+  const rightPaneContent = showVisuals ? (
+    <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', justifyContent: 'center' }}>
+      {costumes.map((costume, index) => (
+        <img 
+          key={index}
+          src={costume} 
+          alt={`Costume ${index}`} 
+          style={{ 
+            width: '60px', 
+            height: '60px', 
+            objectFit: 'contain',
+            cursor: 'pointer',
+            border: selectedCostume === costume ? '2px solid #4a90d9' : '2px solid transparent',
+            borderRadius: '8px',
+            padding: '4px',
+            backgroundColor: 'rgba(255,255,255,0.1)',
+            imageRendering: 'pixelated'
+          }}
+          onClick={() => setSelectedCostume(costume)}
+        />
+      ))}
+    </div>
+  ) : undefined;
+
+  // Resolve the sprite to use for the player in the lobby
+  const lobbySprite = characterType === 'custom' ? (generatedSprites || answers.generatedSprites) : null;
+
+  return (
+    <div style={{
+      width: '100vw',
+      height: '100vh',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: '#1a1a2e'
+    }}>
+      <div style={{
+        width: '1200px',
+        height: '800px',
+        position: 'relative',
+        overflow: 'hidden',
+        backgroundImage: `url(${choosingBackground})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}>
         {/* Player */}
-        <Sprite 
-          x={position.x} 
-          y={position.y} 
-          color="red" 
-          size={SPRITE_SIZE} 
-          image={direction === 'left' ? defaultLeftImg : defaultRightImg}
+        <Sprite
+          x={position.x}
+          y={position.y}
+          color="red"
+          size={characterType === 'custom' ? SPRITE_SIZE * 1.5 : SPRITE_SIZE}
+          image={
+            characterType === 'hellokitty'
+              ? (direction === 'up' ? hkUp
+                : direction === 'down' ? hkDown
+                : direction === 'left' ? hkLeft
+                : hkRight)
+              : characterType === 'custom' && lobbySprite
+              ? (direction === 'up' ? lobbySprite.back
+                : direction === 'down' ? lobbySprite.front
+                : direction === 'left' ? lobbySprite.left
+                : lobbySprite.right)
+              : (direction === 'left' ? defaultLeftImg : defaultRightImg)
+          }
         />
 
-      {/* Static Sprites */}
-      {staticSprites.map((sprite) => (
-        <Sprite key={sprite.id} x={sprite.x} y={sprite.y} color={sprite.color} size={SPRITE_SIZE} />
-      ))}
+        {/* Static Sprites */}
+        {staticSprites.map((sprite) => (
+          <Sprite key={sprite.id} x={sprite.x} y={sprite.y} color={sprite.color} size={sprite.size || SPRITE_SIZE} image={sprite.image} />
+        ))}
 
-      {/* Portal Modal (no text input) */}
-      {activeMenu && activeSprite?.isPortal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          backgroundColor: 'rgba(0,0,0,0.6)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 2000
-        }}>
+        {/* Portal Modal with Learning Material Upload */}
+        {activeMenu && activeSprite?.isPortal && (
           <div style={{
-            backgroundColor: 'white',
-            padding: '32px',
-            borderRadius: '16px',
-            textAlign: 'center',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 2000
           }}>
-            <h2 style={{ margin: '0 0 16px', color: '#333' }}>🌀 Portal</h2>
-            <p style={{ color: '#666', marginBottom: '20px' }}>Ready to enter your adventure?</p>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-              <button
-                onClick={() => handleClose(activeSprite)}
+            <div style={{
+              backgroundColor: 'white',
+              padding: '32px',
+              borderRadius: '16px',
+              textAlign: 'center',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+              maxWidth: '600px',
+              width: '90%'
+            }}>
+              <h2 style={{ margin: '0 0 16px', color: '#333' }}>🌀 Upload Your Study Material</h2>
+              <p style={{ color: '#666', marginBottom: '20px' }}>
+                Paste your notes or upload a text file. This will be used to generate quiz questions during battles!
+              </p>
+
+              {/* Text Area for pasting notes */}
+              <textarea
+                value={learningMaterial}
+                onChange={(e) => setLearningMaterial(e.target.value)}
+                placeholder="Paste your study notes here... (e.g., 'The water cycle consists of evaporation, condensation, and precipitation...')"
                 style={{
-                  padding: '12px 24px',
-                  backgroundColor: '#666',
-                  color: 'white',
-                  border: 'none',
+                  width: '100%',
+                  height: '150px',
+                  padding: '12px',
                   borderRadius: '8px',
-                  fontSize: '16px',
-                  cursor: 'pointer'
+                  border: '2px solid #ddd',
+                  fontSize: '14px',
+                  resize: 'vertical',
+                  marginBottom: '16px',
+                  fontFamily: 'inherit'
                 }}
-              >
-                Close
-              </button>
-              <button
-                onClick={() => onEnterPortal?.(answers)}
-                style={{
-                  padding: '12px 24px',
-                  backgroundColor: activeSprite.color,
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '16px',
-                  cursor: 'pointer',
-                  fontWeight: 'bold'
-                }}
-              >
-                Enter Portal 🚀
-              </button>
+              />
+
+              {/* File Upload */}
+              <div style={{ marginBottom: '20px' }}>
+                <input
+                  type="file"
+                  accept=".txt,.md"
+                  id="fileUpload"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                        const content = event.target?.result as string;
+                        setLearningMaterial(prev => prev + (prev ? '\n\n' : '') + content);
+                      };
+                      reader.readAsText(file);
+                    }
+                  }}
+                />
+                <label
+                  htmlFor="fileUpload"
+                  style={{
+                    padding: '10px 20px',
+                    backgroundColor: '#eee',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    color: '#333'
+                  }}
+                >
+                  📁 Upload Text File
+                </label>
+              </div>
+
+              {/* Character count */}
+              <p style={{ color: '#999', fontSize: '12px', marginBottom: '16px' }}>
+                {learningMaterial.length} characters
+              </p>
+
+              {/* Age Level Selector */}
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{
+                  display: 'block',
+                  color: '#333',
+                  fontWeight: 'bold',
+                  marginBottom: '8px',
+                  fontSize: '14px'
+                }}>
+                  🎯 Question Difficulty Level
+                </label>
+                <select
+                  value={ageLevel}
+                  onChange={(e) => setAgeLevel(e.target.value as AgeLevel)}
+                  style={{
+                    padding: '10px 16px',
+                    borderRadius: '8px',
+                    border: '2px solid #ddd',
+                    fontSize: '14px',
+                    backgroundColor: 'white',
+                    cursor: 'pointer',
+                    minWidth: '200px'
+                  }}
+                >
+                  {AGE_LEVELS.map(level => (
+                    <option key={level} value={level}>
+                      Age {level} years
+                    </option>
+                  ))}
+                </select>
+                <p style={{ color: '#888', fontSize: '11px', marginTop: '6px' }}>
+                  Choose based on the learner's age for appropriate vocabulary
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                <button
+                  onClick={() => {
+                    handleClose(activeSprite);
+                    setLearningMaterial('');
+                  }}
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: '#666',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => onEnterPortal?.({ ...answers, learningMaterial, ageLevel })}
+                  disabled={!learningMaterial.trim()}
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: learningMaterial.trim() ? activeSprite.color : '#ccc',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    cursor: learningMaterial.trim() ? 'pointer' : 'not-allowed',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  Enter Portal 🚀
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Question Modal with text/dictation input */}
-      {activeMenu && activeSprite && !activeSprite.isPortal && (
-        <PromptModal
-          prompt={activeSprite.prompt}
-          onSubmit={(answer) => handleSubmit(activeSprite, answer)}
-          onClose={() => handleClose(activeSprite)}
-          placeholder="Type your answer or use the mic..."
+        {/* Question Modal with text/dictation input */}
+        {activeMenu && activeSprite && !activeSprite.isPortal && (
+          <PromptModal
+            prompt={activeSprite.prompt}
+            onSubmit={(answer) => handleSubmit(activeSprite, answer)}
+            onClose={() => handleClose(activeSprite)}
+            placeholder="Type your answer or use the mic..."
+            width={activeSprite.id === 'character' ? '80%' : undefined}
+            height={activeSprite.id === 'character' ? '80%' : undefined}
+            layout={activeSprite.id === 'character' ? 'split' : 'default'}
+            onInputChange={setCurrentInput}
+            leftPaneContent={leftPaneContent}
+            rightPaneContent={rightPaneContent}
+            isLoading={modalStep === 'loading'}
+            submitLabel={modalStep === 'review' ? 'Confirm' : 'Submit'}
+            clearOnSubmit={activeSprite.id !== 'character'}
+          />
+        )}
+
+
+
+        {/* Progress Bar - Dynamic based on answers submitted */}
+        <img
+          src={progressBarImages[Math.min(Object.keys(answers).length, 3)]}
+          alt={`Progress: ${Object.keys(answers).length}/3`}
+          style={{
+            position: 'absolute',
+            top: '45px',
+            left: '20px',
+            width: '200px',
+            zIndex: 50,
+            pointerEvents: 'none'
+          }}
         />
-      )}
-
-      {/* Debug: Show collected answers */}
-      {Object.keys(answers).length > 0 && (
-        <div style={{
-          position: 'absolute',
-          bottom: '16px',
-          left: '16px',
-          backgroundColor: 'rgba(255,255,255,0.9)',
-          padding: '12px',
-          borderRadius: '8px',
-          fontSize: '12px',
-          maxWidth: '300px'
-        }}>
-          <strong>Your choices:</strong>
-          {answers.character && <div>👤 Character: {answers.character}</div>}
-          {answers.music && <div>🎵 Music: {answers.music}</div>}
-          {answers.background && <div>🖼️ Background: {answers.background}</div>}
-        </div>
-      )}
-
-      {/* Progress Bar */}
-      <img 
-        src={progressBarImg} 
-        alt="Progress Bar" 
-        style={{
-          position: 'absolute',
-          bottom: '20px',
-          right: '20px',
-          width: '500px',
-          zIndex: 50,
-          pointerEvents: 'none'
-        }} 
-      />
+      </div>
     </div>
   )
 }
