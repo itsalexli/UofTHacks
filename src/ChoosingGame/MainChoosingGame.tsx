@@ -5,6 +5,7 @@ import { Sprite } from '../shared/Sprite'
 import { staticSprites, SPRITE_SIZE, type StaticSprite } from './gameConfig'
 import { PromptModal } from './PromptModal'
 import { AGE_LEVELS, type AgeLevel } from '../mainGame/questionBank'
+import { matchBackground, type BackgroundImage, getBackgroundPath } from '../mainGame/backgroundMatcher'
 import progressBar0 from '../assets/progressbar/progressBar0.png'
 import progressBar1 from '../assets/progressbar/progressBar1.png'
 import progressBar2 from '../assets/progressbar/progressBar2.png'
@@ -34,6 +35,7 @@ export interface UserAnswers {
   character?: string;
   music?: string;
   background?: string;
+  backgroundId?: string; // ID of the matched background (guarantees consistency)
   generatedSprites?: {
     front: string;
     back: string;
@@ -57,11 +59,13 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
   const [modalStep, setModalStep] = useState<'input' | 'loading' | 'review'>('input')
   const [selectedCostume, setSelectedCostume] = useState<string>(hkDown)
   const [generatedSprites, setGeneratedSprites] = useState<{ front: string, back: string, left: string, right: string } | null>(null)
+  const [previewBackground, setPreviewBackground] = useState<BackgroundImage | null>(null)
   const [answers, setAnswers] = useState<UserAnswers>({})
   const [learningMaterial, setLearningMaterial] = useState('')
   const [ageLevel, setAgeLevel] = useState<AgeLevel>('6-7')
-  const [isGenerating, setIsGenerating] = useState(false)
   const [isDrawing, setIsDrawing] = useState(false)
+  // Refactor isGenerating to track WHICH type is generating to position the loader correctly
+  const [generatingType, setGeneratingType] = useState<'character' | 'background' | null>(null); 
   const keysPressed = useInputController()
 
   // Game Loop
@@ -175,7 +179,7 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
         // Nano Banana / Gemini Flow - BACKGROUND GENERATION
         // Close modal immediately and start generation
         handleClose(sprite);
-        setIsGenerating(true); 
+        setGeneratingType('character'); 
         
         // Use a detached promise for background work
         fetch('/api/generate', {
@@ -205,7 +209,7 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
             alert('Something went wrong contacting Nano Banana!');
         })
         .finally(() => {
-            setIsGenerating(false); 
+            setGeneratingType(null); 
         });
         
         return; 
@@ -214,6 +218,25 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
       if (modalStep === 'loading') return // Ignore clicks during loading
       
       // If modalStep === 'review', proceed to confirm/save
+    } else if (sprite.id === 'background') {
+        // Special flow for background selection - Match immediately for preview
+        handleClose(sprite); // Close first to show animation on main screen
+        setGeneratingType('background');
+        
+        // Run match and fake delay concurrently
+        Promise.all([
+            matchBackground(answer),
+            new Promise(resolve => setTimeout(resolve, 2000)) // Fake 2s loading
+        ]).then(([matchedBg]) => {
+             setPreviewBackground(matchedBg);
+             setAnswers(prev => ({
+                ...prev,
+                [sprite.id]: answer,
+                backgroundId: matchedBg.id
+             }));
+             setGeneratingType(null);
+        });
+        return; // Return early so we don't do default handleClose again
     }
 
     // Save the answer based on sprite id
@@ -252,7 +275,7 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
     const charSprite = staticSprites.find(s => s.id === 'character');
     if (charSprite) handleClose(charSprite);
 
-    setIsGenerating(true);
+    setGeneratingType('character');
     
     // Detached fetch for background generation
     fetch('/api/generate', {
@@ -284,7 +307,7 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
       alert('Network error. Please try again.');
     })
     .finally(() => {
-        setIsGenerating(false);
+        setGeneratingType(null);
     });
   };
 
@@ -346,6 +369,13 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
   // CRITICAL FIX: Only use confirmed sprites (answers.generatedSprites) for the actual player
   // prevent using the "preview" generatedSprites (which is for the modal only)
   const lobbySprite = characterType === 'custom' ? answers.generatedSprites : null;
+
+  // CONSTANTS for positioning
+  // Character Checkmark: center - 40px
+  // Background Checkmark: center + 40px
+  // We use fixed absolute positions for consistency
+  const CHAR_POS_LEFT = 'calc(50% - 40px)';
+  const BG_POS_LEFT = 'calc(50% + 40px)';
 
   return (
     <div style={{
@@ -661,7 +691,7 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
         )}
 
         {/* Checkmark Notification for Ready Characters */}
-        {generatedSprites && !activeMenu && (
+        {generatedSprites && !activeMenu && generatingType !== 'character' && (
             <button
                 onClick={() => {
                     const charSprite = staticSprites.find(s => s.id === 'character');
@@ -674,7 +704,7 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
                 style={{
                     position: 'absolute',
                     bottom: '30px',
-                    left: '50%',
+                    left: CHAR_POS_LEFT,
                     transform: 'translateX(-50%)',
                     width: '60px',
                     height: '60px',
@@ -698,12 +728,110 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
             </button>
         )}
 
-        {/* Loading Pixel Animation */}
-        {isGenerating && !activeMenu && (
+        {/* Checkmark for Background - Similar to Character */}
+        {previewBackground && !activeMenu && generatingType !== 'background' && (
+            <button
+                onClick={() => {
+                   // Show background overlay
+                   setActiveMenu('background_preview');
+                }}
+                style={{
+                    position: 'absolute',
+                    bottom: '30px',
+                    left: BG_POS_LEFT,
+                    transform: 'translateX(-50%)',
+                    width: '60px',
+                    height: '60px',
+                    backgroundColor: '#2196F3', // Blue for background
+                    border: '4px solid white',
+                    color: 'white',
+                    fontSize: '32px',
+                    fontFamily: 'monospace',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    boxShadow: '4px 4px 0px rgba(0,0,0,0.5)',
+                    zIndex: 100,
+                    imageRendering: 'pixelated',
+                    borderRadius: '0px',
+                    animation: 'popIn 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55)'
+                }}
+            >
+                ✓
+            </button>
+        )}
+        
+        {/* Background Preview Overlay */}
+        {activeMenu === 'background_preview' && previewBackground && (
+            <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                backgroundColor: 'rgba(0,0,0,0.8)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                zIndex: 2500
+            }} onClick={() => setActiveMenu(null)}>
+                 <div style={{
+                    width: '80%',
+                    height: '80%',
+                    maxWidth: '800px',
+                    backgroundColor: 'white',
+                    padding: '16px',
+                    borderRadius: '16px',
+                    position: 'relative',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '16px'
+                 }} onClick={e => e.stopPropagation()}>
+                    <div style={{
+                        flex: 1,
+                        width: '100%',
+                        borderRadius: '8px',
+                        overflow: 'hidden',
+                        backgroundImage: `url(${getBackgroundPath(previewBackground)})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center'
+                    }} />
+                    
+                    <button 
+                        onClick={() => setActiveMenu(null)}
+                        style={{
+                            position: 'absolute',
+                            top: '10px',
+                            right: '10px',
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            width: '50px',
+                            height: '50px',
+                            padding: 0,
+                            zIndex: 10
+                         }}
+                    >
+                        <img 
+                            src={exitButtonImg} 
+                            alt="Close" 
+                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                        />
+                    </button>
+                 </div>
+            </div>
+        )}
+
+        {/* Loading Pixel Animation - Positioned dynamically! */}
+        {generatingType && !activeMenu && (
              <div style={{
                 position: 'absolute',
                 bottom: '40px',
-                left: '50%',
+                // Dynamically align left position based on WHAT is generating
+                left: generatingType === 'character' ? CHAR_POS_LEFT : BG_POS_LEFT,
                 transform: 'translateX(-50%)',
                 width: '40px',
                 height: '40px',
@@ -730,7 +858,8 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
                      fontFamily: 'monospace', 
                      fontSize: '10px', 
                      marginTop: '8px',
-                     textShadow: '2px 2px 0px #000'
+                     textShadow: '2px 2px 0px #000',
+                     whiteSpace: 'nowrap'
                  }}>
                      GENERATING...
                  </div>

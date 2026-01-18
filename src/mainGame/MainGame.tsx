@@ -79,19 +79,40 @@ function MainGame({ userAnswers, onBack }: MainGameProps) {
 
   // Match background on mount based on user's answer
   useEffect(() => {
-    if (userAnswers?.background) {
-      setIsLoadingBg(true)
-      matchBackground(userAnswers.background)
-        .then(matched => {
-          setBackground(matched)
-          setIsLoadingBg(false)
-        })
-        .catch(err => {
-          console.error('Background matching failed:', err)
-          setIsLoadingBg(false)
-        })
+    // If we have a pre-matched ID from the preview phase, find and use it directly!
+    // This ensures what they saw in the preview is exactly what they get here.
+    if (userAnswers?.backgroundId) {
+        import('./backgroundMatcher').then(({ backgrounds }) => {
+            const preMatched = backgrounds.find(bg => bg.id === userAnswers.backgroundId);
+            if (preMatched) {
+                setBackground(preMatched);
+                return;
+            }
+             // Fallback if ID invalid (shouldn't happen)
+             triggerMatch();
+        });
+        return;
     }
-  }, [userAnswers?.background])
+
+    if (userAnswers?.background) {
+      triggerMatch();
+    }
+    
+    function triggerMatch() {
+        setIsLoadingBg(true)
+        if (userAnswers?.background) {
+            matchBackground(userAnswers.background)
+                .then(matched => {
+                setBackground(matched)
+                setIsLoadingBg(false)
+                })
+                .catch(err => {
+                console.error('Background matching failed:', err)
+                setIsLoadingBg(false)
+                })
+        }
+    }
+  }, [userAnswers?.background, userAnswers?.backgroundId])
 
   // Game Loop
   useEffect(() => {

@@ -13,6 +13,7 @@ import { backgrounds, defaultBackground, type BackgroundImage } from './backgrou
 
 // Re-export the type for other files to use
 export type { BackgroundImage } from './backgroundConfig';
+export { backgrounds } from './backgroundConfig';
 
 // Get API key from environment variable
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
