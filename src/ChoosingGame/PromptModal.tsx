@@ -39,6 +39,8 @@ export interface PromptModalProps {
     hideInput?: boolean;
     /** Optional image for the close button */
     closeButtonImage?: string;
+    /** Optional callback when paint button is clicked */
+    onPaintClick?: () => void;
 }
 
 export function PromptModal({
@@ -60,6 +62,7 @@ export function PromptModal({
     textareaStyle,
     closeButtonImage,
     hideInput = false,
+    onPaintClick,
 }: PromptModalProps) {
     const [answer, setAnswer] = useState('');
     const [answerBeforeDictation, setAnswerBeforeDictation] = useState('');
@@ -247,6 +250,29 @@ export function PromptModal({
                                 }}
                                 size={48}
                             />
+                            {onPaintClick && (
+                                <button
+                                    style={{
+                                        width: '48px',
+                                        height: '48px',
+                                        borderRadius: '50%',
+                                        border: 'none',
+                                        backgroundColor: '#9c27b0',
+                                        color: 'white',
+                                        fontSize: '20px',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+                                        marginTop: '8px'
+                                    }}
+                                    onClick={onPaintClick}
+                                    title="Draw your character"
+                                >
+                                    🖌️
+                                </button>
+                            )}
                         </div>
                     </div>
                 )}
