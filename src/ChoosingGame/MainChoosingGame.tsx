@@ -537,8 +537,6 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
                     width: '100%',
                     height: '100%',
                     objectFit: 'contain',
-                    padding: '12px 24px',
-                    backgroundColor: '#666',
                     color: 'white',
                     border: 'none',
                     borderRadius: '8px',
@@ -671,7 +669,6 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
             />
         )}
 
-        {/* Checkmark Notification for Ready Characters */}
         {/* Checkmark Notification for Ready Characters */}
         {generatedSprites && !activeMenu && (
             <button
