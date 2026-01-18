@@ -577,7 +577,7 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
                 marginBottom: '158px',
                 marginRight: '95px',
                 width: '90%',
-                maxWidth: '250px',
+                maxWidth: '350px',
                 alignSelf: 'center',
               } :
               activeSprite.id === 'background' ? {
@@ -585,7 +585,7 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
                 top: '305px',
                 right: '225px',
                 width: '85%',
-                maxWidth: '250px',
+                maxWidth: '350px',
                 zIndex: 10,
               } :
               activeSprite.id === 'music' ? {
@@ -593,7 +593,7 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
                 top: '305px',
                 right: '225px',
                 width: '85%',
-                maxWidth: '250px',
+                maxWidth: '350px',
                 zIndex: 10,
               } : undefined
             }

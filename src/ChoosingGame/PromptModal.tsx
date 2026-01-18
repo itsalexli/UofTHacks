@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { DictationButton } from './DictationTool';
+import submitButtonImg from './submitButton.png';
 
 export interface PromptModalProps {
     /** The prompt/question to display */
@@ -211,7 +212,7 @@ export function PromptModal({
             cursor: isLoading ? 'wait' : 'pointer',
             marginTop: '16px',
             width: '100%',
-            height: '60px',
+            height: '140px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
@@ -254,21 +255,18 @@ export function PromptModal({
 
                 {/* Submit Button and Dictation Tool Row */}
                 <div style={styles.submitRow}>
-                    <button 
-                        style={{
-                            ...styles.submitButton,
-                            backgroundColor: isLoading ? '#ccc' : '#4a90d9',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '8px',
-                            padding: '0 24px',
-                            fontSize: '16px',
-                            fontWeight: 600,
-                        }} 
-                        onClick={handleSubmit} 
-                        disabled={isLoading}
-                    >
-                        {isLoading ? 'Loading...' : submitLabel}
+                    <button style={styles.submitButton} onClick={handleSubmit} disabled={isLoading}>
+                    {isLoading ? 'Loading...' : (
+                        <img
+                            src={submitButtonImg}
+                            alt="Submit"
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'contain'
+                            }}
+                        />
+                    )}
                     </button>
                     {!hideInput && (
                          <div style={styles.dictationContainer}>
