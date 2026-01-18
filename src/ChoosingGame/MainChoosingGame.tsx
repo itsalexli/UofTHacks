@@ -24,6 +24,12 @@ export interface UserAnswers {
   character?: string;
   music?: string;
   background?: string;
+  generatedSprites?: {
+    front: string;
+    back: string;
+    left: string;
+    right: string;
+  };
 }
 
 interface ChoosingGameProps {
@@ -33,11 +39,12 @@ interface ChoosingGameProps {
 function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
   const [position, setPosition] = useState({ x: 575, y: 725 })
   const [direction, setDirection] = useState<'left' | 'right' | 'up' | 'down'>('right')
-  const [characterType, setCharacterType] = useState<'default' | 'hellokitty'>('default')
+  const [characterType, setCharacterType] = useState<'default' | 'hellokitty' | 'custom'>('default')
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [currentInput, setCurrentInput] = useState('')
   const [modalStep, setModalStep] = useState<'input' | 'loading' | 'review'>('input')
   const [selectedCostume, setSelectedCostume] = useState<string>(hkDown)
+  const [generatedSprites, setGeneratedSprites] = useState<{ front: string, back: string, left: string, right: string } | null>(null)
   const [answers, setAnswers] = useState<UserAnswers>({})
   const keysPressed = useInputController()
 
@@ -61,6 +68,7 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
           setCurrentInput('') // Reset input when opening menu
           setModalStep('input')
           setSelectedCostume(hkDown) // Reset costume selection
+          setGeneratedSprites(null)
         }
       }
     }
@@ -110,6 +118,7 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
     setCurrentInput('')
     setModalStep('input')
     setSelectedCostume(hkDown)
+    setGeneratedSprites(null)
     // Nudge player away to prevent immediate re-collision
     setPosition(prev => ({
       x: prev.x < sprite.x ? prev.x - 10 : prev.x + 10,
@@ -117,16 +126,53 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
     }))
   }
 
-  const handleSubmit = (sprite: StaticSprite, answer: string) => {
+  const handleSubmit = async (sprite: StaticSprite, answer: string) => {
     // Special flow for character selection
     if (sprite.id === 'character') {
       if (modalStep === 'input') {
         setModalStep('loading')
-        // Simulate loading then show result
-        setTimeout(() => {
-          setModalStep('review')
-        }, 1500)
-        return // Don't close yet
+        
+        const lowerAnswer = answer.toLowerCase();
+        // Hello Kitty Flow
+        if (lowerAnswer.includes('hello kitty') || lowerAnswer.includes('hellokitty') || lowerAnswer.includes('kitty')) {
+            setTimeout(() => {
+                setModalStep('review')
+                setCharacterType('hellokitty')
+                setSelectedCostume(hkDown)
+            }, 1500)
+            return;
+        }
+
+        // Nano Banana / Gemini Flow
+        try {
+            const response = await fetch('/api/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: answer })
+            });
+            const data = await response.json();
+
+            if (data.success && data.paths) {
+                setGeneratedSprites({
+                    front: data.paths.front,
+                    back: data.paths.back,
+                    left: data.paths.left,
+                    right: data.paths.right
+                });
+                setCharacterType('custom');
+                setSelectedCostume(data.paths.front);
+                setModalStep('review');
+            } else {
+                console.error('Generation failed:', data.error);
+                alert('Failed to generate character. Try again!');
+                setModalStep('input');
+            }
+        } catch (e) {
+            console.error('API Error:', e);
+            alert('Something went wrong contacting Nano Banana!');
+            setModalStep('input');
+        }
+        return; // Don't close yet
       }
       
       if (modalStep === 'loading') return // Ignore clicks during loading
@@ -137,14 +183,18 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
     // Save the answer based on sprite id
     setAnswers(prev => ({
       ...prev,
-      [sprite.id]: answer
+      [sprite.id]: answer,
+      // If we generated sprites, save them too
+      ...(sprite.id === 'character' && generatedSprites ? { generatedSprites } : {})
     }))
-    
-    // Check for Hello Kitty easter egg
+
+    // Check for Hello Kitty easter egg or Custom character
     if (sprite.id === 'character') {
       const lowerAnswer = answer.toLowerCase();
       if (lowerAnswer.includes('hello kitty') || lowerAnswer.includes('hellokitty') || lowerAnswer.includes('kitty')) {
         setCharacterType('hellokitty');
+      } else if (generatedSprites) {
+        setCharacterType('custom');
       } else {
         setCharacterType('default');
       }
@@ -154,21 +204,27 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
     handleClose(sprite)
   }
 
-  // Easter Egg Content Logic
-  // Only show visuals if we are in the 'review' step
-  const showHelloKittyVisuals = activeSprite?.id === 'character' && 
-    modalStep === 'review' &&
-    (currentInput.toLowerCase().includes('hello kitty') || 
-     currentInput.toLowerCase().includes('hellokitty') || 
-     currentInput.toLowerCase().includes('kitty'));
+  // Easter Egg & Custom Content Logic
+  const isHelloKitty = characterType === 'hellokitty';
+  const isCustom = characterType === 'custom' && (generatedSprites || answers.generatedSprites);
+  
+  const showVisuals = activeSprite?.id === 'character' && modalStep === 'review';
 
-  const leftPaneContent = showHelloKittyVisuals ? (
-    <img src={selectedCostume} alt="Hello Kitty" style={{ width: '80%', height: 'auto', objectFit: 'contain' }} />
+  const leftPaneContent = showVisuals ? (
+    <img src={selectedCostume} alt="Character Preview" style={{ width: '80%', height: 'auto', objectFit: 'contain', imageRendering: 'pixelated' }} />
   ) : undefined;
 
-  const costumes = [hkDown, hkLeft, hkUp, hkRight];
+  let costumes: string[] = [];
+  if (isHelloKitty) {
+      costumes = [hkDown, hkLeft, hkUp, hkRight];
+  } else if (characterType === 'custom') { // Check type directly for costumes list, transient state is enough for review
+      const sprites = generatedSprites || answers.generatedSprites;
+      if (sprites) {
+        costumes = [sprites.front, sprites.left, sprites.back, sprites.right];
+      }
+  }
 
-  const rightPaneContent = showHelloKittyVisuals ? (
+  const rightPaneContent = showVisuals ? (
     <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', justifyContent: 'center' }}>
       {costumes.map((costume, index) => (
         <img 
@@ -182,13 +238,18 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
             cursor: 'pointer',
             border: selectedCostume === costume ? '2px solid #4a90d9' : '2px solid transparent',
             borderRadius: '8px',
-            padding: '4px'
+            padding: '4px',
+            backgroundColor: 'rgba(255,255,255,0.1)',
+            imageRendering: 'pixelated'
           }}
           onClick={() => setSelectedCostume(costume)}
         />
       ))}
     </div>
   ) : undefined;
+
+  // Resolve the sprite to use for the player in the lobby
+  const lobbySprite = characterType === 'custom' ? (generatedSprites || answers.generatedSprites) : null;
 
   return (
     <div style={{
@@ -213,13 +274,18 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
           x={position.x}
           y={position.y}
           color="red"
-          size={SPRITE_SIZE}
+          size={characterType === 'custom' ? SPRITE_SIZE * 1.5 : SPRITE_SIZE}
           image={
             characterType === 'hellokitty'
               ? (direction === 'up' ? hkUp
                 : direction === 'down' ? hkDown
                 : direction === 'left' ? hkLeft
                 : hkRight)
+              : characterType === 'custom' && lobbySprite
+              ? (direction === 'up' ? lobbySprite.back
+                : direction === 'down' ? lobbySprite.front
+                : direction === 'left' ? lobbySprite.left
+                : lobbySprite.right)
               : (direction === 'left' ? defaultLeftImg : defaultRightImg)
           }
         />

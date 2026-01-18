@@ -196,15 +196,20 @@ function MainGame({ userAnswers, onBack }: MainGameProps) {
             x={position.x} 
             y={position.y} 
             color="red" 
-            size={PLAYER_SIZE} 
+            size={userAnswers.generatedSprites ? PLAYER_SIZE * 1.5 : PLAYER_SIZE}
             image={
-              direction === 'up' 
-                ? (isMoving && frameToggle ? hkUpWalk : hkUp)
-                : direction === 'left'
-                ? (isMoving && frameToggle ? hkLeftWalk : hkLeft)
-                : direction === 'right'
-                ? (isMoving && frameToggle ? hkRightWalk : hkRight)
-                : (isMoving && frameToggle ? hkDownWalk : hkDown) // default down
+              userAnswers.generatedSprites
+                ? (direction === 'up' ? userAnswers.generatedSprites.back
+                  : direction === 'left' ? userAnswers.generatedSprites.left
+                  : direction === 'right' ? userAnswers.generatedSprites.right
+                  : userAnswers.generatedSprites.front)
+                : (direction === 'up' 
+                  ? (isMoving && frameToggle ? hkUpWalk : hkUp)
+                  : direction === 'left'
+                  ? (isMoving && frameToggle ? hkLeftWalk : hkLeft)
+                  : direction === 'right'
+                  ? (isMoving && frameToggle ? hkRightWalk : hkRight)
+                  : (isMoving && frameToggle ? hkDownWalk : hkDown))
             }
           />
 

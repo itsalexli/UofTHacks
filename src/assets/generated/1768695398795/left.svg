@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+    <!-- Outline -->
+    <rect x="10" y="7" width="12" height="18" fill="#000000"/>
+    <!-- Body -->
+    <rect x="11" y="8" width="10" height="16" fill="#00AEEF"/>
+    
+    <!-- Base detail -->
+    <rect x="12" y="23" width="8" height="1" fill="#FFFFFF"/>
+    
+    <!-- Single Eye/Detail (Left facing) -->
+    <rect x="13" y="13" width="2" height="2" fill="#000000"/>
+</svg>
