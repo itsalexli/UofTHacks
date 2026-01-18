@@ -66,11 +66,11 @@ function MainGame({ userAnswers, onBack }: MainGameProps) {
 
     // Manually place each sprite at (100, 200) one at a time
     const newSprites: StaticSprite[] = [
-      { ...initialSprites[0], x: 400, y: 180, image: getRandomImage() },
-      { ...initialSprites[1], x: 250, y: 60, image: getRandomImage() },
-      { ...initialSprites[4], x: 750, y: 200, image: getRandomImage() },
-      { ...initialSprites[5], x: 900, y: 50, image: getRandomImage() },
-      { ...initialSprites[6], x: 570, y: 325, image: getRandomImage() },
+      { ...initialSprites[0], x: 500, y: 180, image: getRandomImage() },
+      { ...initialSprites[1], x: 325, y: 60, image: getRandomImage() },
+      { ...initialSprites[4], x: 950, y: 200, image: getRandomImage() },
+      { ...initialSprites[5], x: 1100, y: 50, image: getRandomImage() },
+      { ...initialSprites[6], x: 725, y: 375, image: getRandomImage() },
     ];
 
     setGameSprites(newSprites);

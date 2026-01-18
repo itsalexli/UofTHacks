@@ -506,9 +506,9 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
             onClose={() => handleClose(activeSprite)}
             placeholder="Type your answer or use the mic..."
             width={
-              activeSprite.id === 'character' ? '60%' :
-              activeSprite.id === 'background' ? '65%' :
-              activeSprite.id === 'music' ? '65%' :
+              activeSprite.id === 'character' ? '58%' :
+              activeSprite.id === 'background' ? '63%' :
+              activeSprite.id === 'music' ? '63%' :
               undefined
             }
             height={
@@ -524,7 +524,7 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
             isLoading={modalStep === 'loading'}
             inputAreaStyle={
               activeSprite.id === 'character' ? {
-                marginBottom: '158px', // Push up from bottom
+                marginBottom: '138px', // Push up from bottom
                 marginRight: '95px',  // Push in from right
                 width: '90%',         // Ensure it fits
                 maxWidth: '250px',    // Constrain width
@@ -532,7 +532,7 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
             } :
             activeSprite.id === 'background' ? {
               position: 'absolute',
-              top: '305px',
+              top: '280px',
               right: '225px',
               width: '85%',         // Ensure it fits
               maxWidth: '250px',    // Constrain width
@@ -540,7 +540,7 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
             } :
             activeSprite.id === 'music' ? {
               position: 'absolute',
-              top: '305px',
+              top: '285px',
               right: '225px',
               width: '85%',         // Ensure it fits
               maxWidth: '250px',    // Constrain width
