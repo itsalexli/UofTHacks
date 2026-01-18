@@ -1,6 +1,7 @@
 import type { FC } from 'react'
 import landingpage from './assets/landingpage.png'
 import startgame from './assets/buttons/startgame.png'
+import wundrImg from './assets/buttons/wundr.png'
 
 interface LandingPageProps {
   onStartGame: () => void;
@@ -18,11 +19,23 @@ export const LandingPage: FC<LandingPageProps> = ({ onStartGame }) => {
         backgroundRepeat: 'no-repeat',
         display: 'flex',
         justifyContent: 'center',
-        alignItems: 'flex-start',
-        paddingTop: '150px',
+        alignItems: 'center',
         position: 'relative'
       }}
     >
+      <img
+        src={wundrImg}
+        alt=""
+        style={{
+          position: 'absolute',
+          top: '125px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '600px',
+          height: 'auto',
+          pointerEvents: 'none'
+        }}
+      />
       <button
         onClick={onStartGame}
         style={{
@@ -34,9 +47,10 @@ export const LandingPage: FC<LandingPageProps> = ({ onStartGame }) => {
           backgroundSize: 'contain',
           backgroundRepeat: 'no-repeat',
           backgroundPosition: 'center',
-          marginTop: '100px',
-          width: '800px',
-          height: '100px'
+          width: '400px',
+          height: '100px',
+          marginTop: '-175px',
+          position: 'relative'
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = 'scale(1.05)';
