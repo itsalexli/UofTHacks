@@ -16,6 +16,9 @@ import hkLeft from '../assets/hellokitty/hk-left.png'
 import hkRight from '../assets/hellokitty/hk-right.png'
 import hkUp from '../assets/hellokitty/hk-up.png'
 import hkDown from '../assets/hellokitty/hk-down.png'
+import characterDesignerBg from '../assets/_designer_ popups/character designer.png'
+import characterShowcaseBg from '../assets/_designer_ popups/character designer (Character showcase).png'
+import exitButtonImg from '../assets/_designer_ popups/exitbutton.png'
 
 // Progress bar images array (0 = empty, 3 = full)
 const progressBarImages = [progressBar0, progressBar1, progressBar2, progressBar3];
@@ -51,6 +54,7 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
   const [answers, setAnswers] = useState<UserAnswers>({})
   const [learningMaterial, setLearningMaterial] = useState('')
   const [ageLevel, setAgeLevel] = useState<AgeLevel>('6-7')
+  const [isGenerating, setIsGenerating] = useState(false)
   const keysPressed = useInputController()
 
   // Game Loop
@@ -164,7 +168,7 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
         // Nano Banana / Gemini Flow - BACKGROUND GENERATION
         // Close modal immediately and start generation
         handleClose(sprite);
-        // setIsGenerating(true); // TODO: Add state
+        setIsGenerating(true); 
         
         // Use a detached promise for background work
         fetch('/api/generate', {
@@ -194,7 +198,7 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
             alert('Something went wrong contacting Nano Banana!');
         })
         .finally(() => {
-            // setIsGenerating(false); 
+            setIsGenerating(false); 
         });
         
         return; 
@@ -237,7 +241,7 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
   const showVisuals = activeSprite?.id === 'character' && modalStep === 'review';
 
   const leftPaneContent = showVisuals ? (
-    <img src={selectedCostume} alt="Character Preview" style={{ width: '80%', height: 'auto', objectFit: 'contain', imageRendering: 'pixelated' }} />
+    <img src={selectedCostume} alt="Character Preview" style={{ width: '80%', height: 'auto', objectFit: 'contain', imageRendering: 'pixelated', marginLeft: '100px' }} />
   ) : undefined;
 
   let costumes: string[] = [];
@@ -252,7 +256,16 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
   }
 
   const rightPaneContent = showVisuals ? (
-    <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', justifyContent: 'center' }}>
+    <div style={{ 
+      display: 'grid', 
+      gridTemplateColumns: 'repeat(2, 1fr)', 
+      gap: '16px', 
+      marginBottom: '90px',
+      marginLeft: '90px', 
+      justifyItems: 'center',
+      width: 'fit-content',
+      margin: '0 auto 24px auto'
+    }}>
       {costumes.map((costume, index) => (
         <img 
           key={index}
@@ -359,7 +372,7 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
                 placeholder="Paste your study notes here... (e.g., 'The water cycle consists of evaporation, condensation, and precipitation...')"
                 style={{
                   width: '100%',
-                  height: '150px',
+                  height: '200px',
                   padding: '12px',
                   borderRadius: '8px',
                   border: '2px solid #ddd',
@@ -490,18 +503,29 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
             onSubmit={(answer) => handleSubmit(activeSprite, answer)}
             onClose={() => handleClose(activeSprite)}
             placeholder="Type your answer or use the mic..."
-            width={activeSprite.id === 'character' ? '80%' : undefined}
-            height={activeSprite.id === 'character' ? '80%' : undefined}
+            width={activeSprite.id === 'character' ? '60%' : undefined}
+            height={activeSprite.id === 'character' ? '95%' : undefined}
             layout={activeSprite.id === 'character' ? 'split' : 'default'}
             onInputChange={setCurrentInput}
             leftPaneContent={leftPaneContent}
             rightPaneContent={rightPaneContent}
             isLoading={modalStep === 'loading'}
             submitLabel={modalStep === 'review' ? 'Confirm' : 'Submit'}
-            clearOnSubmit={activeSprite.id !== 'character'}
+            inputAreaStyle={activeSprite.id === 'character' ? {
+                marginBottom: '150px', // Push up from bottom
+                marginRight: '35px',  // Push in from right
+                width: '90%',         // Ensure it fits
+                maxWidth: '320px',    // Constrain width
+                alignSelf: 'center',   // Center horizontally in the pane
+            } : undefined}
+            backgroundImage={activeSprite.id === 'character' ? (modalStep === 'review' ? characterShowcaseBg : characterDesignerBg) : undefined}
+            textareaStyle={activeSprite.id === 'character' ? { minHeight: '300px' } : undefined}
+            closeButtonImage={activeSprite.id === 'character' ? exitButtonImg : undefined}
+            hideInput={activeSprite.id === 'character' && modalStep === 'review'}
           />
         )}
 
+        {/* Checkmark Notification for Ready Characters */}
         {/* Checkmark Notification for Ready Characters */}
         {generatedSprites && !activeMenu && (
             <button
@@ -520,22 +544,63 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
                     transform: 'translateX(-50%)',
                     width: '60px',
                     height: '60px',
-                    borderRadius: '50%',
                     backgroundColor: '#4CAF50',
                     border: '4px solid white',
                     color: 'white',
                     fontSize: '32px',
+                    fontFamily: 'monospace', // Monospace for pixelated feel if font is missing
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     cursor: 'pointer',
-                    boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+                    boxShadow: '4px 4px 0px rgba(0,0,0,0.5)', // Hard shadow for pixel feel
                     zIndex: 100,
+                    imageRendering: 'pixelated', // Hint to browser
+                    borderRadius: '0px', // Boxy for pixel look
                     animation: 'popIn 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55)'
                 }}
             >
                 ✓
             </button>
+        )}
+
+        {/* Loading Pixel Animation */}
+        {isGenerating && !activeMenu && (
+             <div style={{
+                position: 'absolute',
+                bottom: '40px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '40px',
+                height: '40px',
+                zIndex: 100
+             }}>
+                 {/* Main pixelated spinner/bouncer using simple CSS divs */}
+                 <div style={{
+                     width: '20px',
+                     height: '20px',
+                     backgroundColor: 'white',
+                     boxShadow: '4px 4px 0px rgba(0,0,0,0.5)',
+                     animation: 'spin 1s infinite steps(4)', // Steps for jerky pixel motion
+                     margin: 'auto'
+                 }} />
+                 <style>{`
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                 `}</style>
+                 <div style={{ 
+                     textAlign: 'center', 
+                     color: 'white', 
+                     fontFamily: 'monospace', 
+                     fontSize: '10px', 
+                     marginTop: '8px',
+                     textShadow: '2px 2px 0px #000'
+                 }}>
+                     GENERATING...
+                 </div>
+             </div>
         )}
 
 

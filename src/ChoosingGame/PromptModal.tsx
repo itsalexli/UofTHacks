@@ -28,6 +28,17 @@ export interface PromptModalProps {
     isLoading?: boolean;
     /** Whether to clear input on submit (default true) */
     clearOnSubmit?: boolean;
+    /** Optional background image URL */
+    backgroundImage?: string;
+    /** Optional custom style for the input area container */
+    inputAreaStyle?: React.CSSProperties;
+    /** Optional custom style for the textarea itself */
+    /** Optional custom style for the textarea itself */
+    textareaStyle?: React.CSSProperties;
+    /** Optional to hide the input area (e.g. for review mode) */
+    hideInput?: boolean;
+    /** Optional image for the close button */
+    closeButtonImage?: string;
 }
 
 export function PromptModal({
@@ -44,6 +55,11 @@ export function PromptModal({
     submitLabel = 'Submit',
     isLoading = false,
     clearOnSubmit = true,
+    backgroundImage,
+    inputAreaStyle,
+    textareaStyle,
+    closeButtonImage,
+    hideInput = false,
 }: PromptModalProps) {
     const [answer, setAnswer] = useState('');
     const [answerBeforeDictation, setAnswerBeforeDictation] = useState('');
@@ -82,7 +98,7 @@ export function PromptModal({
             zIndex: 2000,
         },
         modal: {
-            backgroundColor: 'white',
+            backgroundColor: backgroundImage ? 'transparent' : 'white',
             borderRadius: '16px',
             padding: layout === 'split' ? '0' : '24px',
             maxWidth: width ? '90%' : '500px',
@@ -91,11 +107,25 @@ export function PromptModal({
             maxHeight: height ? '90vh' : 'auto',
             display: 'flex',
             flexDirection: 'column',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+            boxShadow: backgroundImage ? 'none' : '0 8px 32px rgba(0, 0, 0, 0.3)',
             position: 'relative',
             overflow: 'hidden',
+            backgroundImage: backgroundImage ? `url("${backgroundImage}")` : undefined,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
         },
-        closeButton: {
+        closeButton: closeButtonImage ? {
+            position: 'absolute',
+            top: '60px',
+            right: '70px',
+            width: '60px',
+            height: 'auto',
+            background: 'none',
+            border: 'none',
+            padding: 0,
+            cursor: 'pointer',
+            zIndex: 10,
+        } : {
             position: 'absolute',
             top: '12px',
             right: '12px',
@@ -120,7 +150,7 @@ export function PromptModal({
         },
         leftPane: {
             width: '45%',
-            backgroundColor: 'black',
+            backgroundColor: 'transparent',
             height: '100%',
             display: 'flex',
             alignItems: 'center',
@@ -135,6 +165,7 @@ export function PromptModal({
             padding: '24px',
             height: '100%',
             boxSizing: 'border-box',
+            position: 'relative', // Allow absolute positioning of children if needed
         },
         // Content Styles
         promptText: {
@@ -146,6 +177,7 @@ export function PromptModal({
         },
         inputWrapper: {
             // No margin needed as parent aligns to bottom
+            ...inputAreaStyle, // Apply custom styles
         },
         inputContainer: {
             display: 'flex',
@@ -161,6 +193,7 @@ export function PromptModal({
             fontSize: '16px',
             fontFamily: 'inherit',
             resize: 'vertical' as const,
+            ...textareaStyle, // Apply custom styles
         },
         buttonContainer: {
             display: 'flex',
@@ -170,14 +203,14 @@ export function PromptModal({
         submitButton: {
             padding: '12px 24px',
             borderRadius: '8px',
-            border: 'none',
+            border: 'none', 
             backgroundColor: isLoading ? '#ccc' : '#4a90d9',
             color: 'white',
             fontSize: '16px',
             fontWeight: 600,
             cursor: isLoading ? 'wait' : 'pointer',
             marginTop: '16px',
-            width: '100%',
+            width: '85%',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
@@ -192,29 +225,31 @@ export function PromptModal({
 
             {/* Input Wrapper */}
             <div style={styles.inputWrapper}>
-                <div style={styles.inputContainer}>
-                    <textarea
-                        style={styles.textarea}
-                        value={answer}
-                        onChange={handleInputChange}
-                        onKeyDown={handleKeyDown}
-                        placeholder={placeholder}
-                        autoFocus
-                        disabled={isLoading}
-                    />
-                    <div style={styles.buttonContainer}>
-                        <DictationButton
-                            onDictationStart={() => setAnswerBeforeDictation(answer)}
-                            onTranscriptChange={(text) => {
-                                const separator = answerBeforeDictation && !answerBeforeDictation.endsWith(' ') ? ' ' : '';
-                                const newVal = answerBeforeDictation + separator + text;
-                                setAnswer(newVal);
-                                onInputChange?.(newVal);
-                            }}
-                            size={48}
+                {!hideInput && (
+                    <div style={styles.inputContainer}>
+                        <textarea
+                            style={styles.textarea}
+                            value={answer}
+                            onChange={handleInputChange}
+                            onKeyDown={handleKeyDown}
+                            placeholder={placeholder}
+                            autoFocus
+                            disabled={isLoading}
                         />
+                        <div style={styles.buttonContainer}>
+                            <DictationButton
+                                onDictationStart={() => setAnswerBeforeDictation(answer)}
+                                onTranscriptChange={(text) => {
+                                    const separator = answerBeforeDictation && !answerBeforeDictation.endsWith(' ') ? ' ' : '';
+                                    const newVal = answerBeforeDictation + separator + text;
+                                    setAnswer(newVal);
+                                    onInputChange?.(newVal);
+                                }}
+                                size={48}
+                            />
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* Submit Button */}
                 <button style={styles.submitButton} onClick={handleSubmit} disabled={isLoading}>
@@ -228,8 +263,19 @@ export function PromptModal({
         <div style={styles.overlay} onClick={onClose}>
             <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
                 {/* Close Button */}
+                {/* Close Button */}
                 <button style={styles.closeButton} onClick={onClose} title="Close">
-                    ✕
+                    {closeButtonImage ? (
+                        <img 
+                            src={closeButtonImage} 
+                            alt="Close" 
+                            style={{ 
+                                width: '100%', 
+                                height: '100%', 
+                                objectFit: 'contain' 
+                            }} 
+                        />
+                    ) : '✕'}
                 </button>
 
                 {layout === 'split' ? (
