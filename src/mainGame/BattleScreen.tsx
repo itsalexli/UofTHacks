@@ -16,6 +16,11 @@ import fireballImg from '../assets/buttons/fireballButton.png'
 import iceShardImg from '../assets/buttons/iceShardButton.png'
 import lightningImg from '../assets/buttons/lightingButton.png'
 import boulderImg from '../assets/buttons/boulderButton.png'
+import fireballProjectileImg from '../assets/spells/fireball.png'
+import iceShardProjectileImg from '../assets/spells/iceshard.png'
+import lightningProjectileImg from '../assets/spells/lightning.png'
+import boulderProjectileImg from '../assets/spells/boulder.png'
+import orbProjectileImg from '../assets/spells/orb.png'
 import candyLandBg from '../assets/battleBackgrounds/candy_land.png'
 import cherryBlossomGardenBg from '../assets/battleBackgrounds/cheery_blossom_garden.png'
 import cityTorontoBg from '../assets/battleBackgrounds/city_toronto.png'
@@ -46,9 +51,13 @@ interface Projectile {
   id: number;
   x: number;
   y: number;
-  color: string;
+  image: string;
   stopped?: boolean;
 }
+
+const PROJECTILE_SIZE = 144;
+const ENEMY_PROJECTILE_SIZE = 144;
+const PROJECTILE_SPEED = 7;
 
 // Helper to get health image based on HP
 const getHealthImage = (hp: number) => {
@@ -74,6 +83,7 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
   const [projectiles, setProjectiles] = useState<Projectile[]>([]);
   const [isEnemyHurt, setIsEnemyHurt] = useState(false);
   const [isPlayerHurt, setIsPlayerHurt] = useState(false);
+  const [enemyProjectiles, setEnemyProjectiles] = useState<Projectile[]>([]);
 
   // playerHP is now controlled by props
   const [enemyHP, setEnemyHP] = useState(100);
@@ -143,6 +153,7 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
   }, [enemyHP, playerHP, battleResult]);
 
   const enemyRef = React.useRef<HTMLDivElement>(null);
+  const playerRef = React.useRef<HTMLDivElement>(null);
 
   // Projectile Animation Loop
   useEffect(() => {
@@ -159,18 +170,18 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
         .map(p => {
           if (p.stopped) return p;
 
-          let nextX = p.x + 10;
+          let nextX = p.x + PROJECTILE_SPEED;
           let stopped = false;
 
           // Check collision with enemy
-          if (enemyRect && nextX + 10 >= enemyRect.left) {
+          if (enemyRect && nextX + PROJECTILE_SIZE >= enemyRect.left) {
             stopped = true;
             hitOccurred = true;
           }
 
           return { ...p, x: nextX, stopped };
         })
-        .filter(p => !p.stopped && p.x < window.innerWidth);
+        .filter(p => !p.stopped && p.x < window.innerWidth + PROJECTILE_SIZE);
 
         if (hitOccurred) {
           // Reduce enemy HP by 25 (4 hits to kill) instead of arbitrary amount
@@ -190,6 +201,50 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
     return () => cancelAnimationFrame(animationId);
   }, [projectiles]);
 
+  // Enemy Projectile Animation Loop
+  useEffect(() => {
+    if (enemyProjectiles.length === 0) return;
+
+    const animationId = requestAnimationFrame(() => {
+      const playerRect = playerRef.current?.getBoundingClientRect();
+      let hitOccurred = false;
+
+      const nextProjectiles = enemyProjectiles
+        .map(p => {
+          const nextX = p.x - PROJECTILE_SPEED;
+          let stopped = false;
+
+          if (playerRect && nextX <= playerRect.right) {
+            const projectileCenterY = p.y + ENEMY_PROJECTILE_SIZE / 2;
+            if (projectileCenterY >= playerRect.top && projectileCenterY <= playerRect.bottom) {
+              stopped = true;
+              hitOccurred = true;
+            }
+          }
+
+          return { ...p, x: nextX, stopped };
+        })
+        .filter(p => !p.stopped && p.x > -ENEMY_PROJECTILE_SIZE);
+
+      if (hitOccurred) {
+        setIsPlayerHurt(true);
+        // Damage player by one tier
+        setPlayerHP(prev => {
+          if (prev <= 25) return 0;
+          if (prev <= 50) return 25;
+          if (prev <= 75) return 50;
+          if (prev <= 100) return 75;
+          return prev;
+        });
+        setTimeout(() => setIsPlayerHurt(false), 200);
+      }
+
+      setEnemyProjectiles(nextProjectiles);
+    });
+
+    return () => cancelAnimationFrame(animationId);
+  }, [enemyProjectiles]);
+
   const handleSpellComplete = (correct?: boolean) => {
     const spell = activeSpell;
     setActiveSpell(null);
@@ -201,33 +256,35 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
     }
 
     if (correct && spell) {
-      let color = 'white';
-      if (spell === 'Fireball') color = 'red';
-      else if (spell === 'Ice Shard') color = 'blue';
-      else if (spell === 'Lightning') color = 'yellow';
-      else if (spell === 'Boulder') color = 'grey';
+      let image = fireballProjectileImg;
+      if (spell === 'Fireball') image = fireballProjectileImg;
+      else if (spell === 'Ice Shard') image = iceShardProjectileImg;
+      else if (spell === 'Lightning') image = lightningProjectileImg;
+      else if (spell === 'Boulder') image = boulderProjectileImg;
 
       const newProjectile: Projectile = {
         id: Date.now(),
         x: window.innerWidth * 0.1 + 250, // Start from right edge of player sprite
         y: window.innerHeight / 2,
-        color
+        image
       };
 
       setProjectiles(prev => [...prev, newProjectile]);
     } else if (!correct) {
-      setTimeout(() => {
-        setIsPlayerHurt(true);
-        // Damage player by one tier
-        setPlayerHP(prev => {
-          if (prev <= 25) return 0;
-          if (prev <= 50) return 25;
-          if (prev <= 75) return 50;
-          if (prev <= 100) return 75;
-          return prev;
-        });
-        setTimeout(() => setIsPlayerHurt(false), 200);
-      }, 300);
+      const enemyRect = enemyRef.current?.getBoundingClientRect();
+      const startX = enemyRect ? enemyRect.left : window.innerWidth * 0.7;
+      const startY = enemyRect
+        ? enemyRect.top + enemyRect.height / 2 - ENEMY_PROJECTILE_SIZE / 2
+        : window.innerHeight / 2;
+
+      const newProjectile: Projectile = {
+        id: Date.now(),
+        x: startX,
+        y: startY,
+        image: orbProjectileImg
+      };
+
+      setEnemyProjectiles(prev => [...prev, newProjectile]);
     }
   };
 
@@ -272,16 +329,35 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
 
       {/* Projectiles Layer */}
       {projectiles.map(p => (
-        <div
+        <img
           key={p.id}
+          src={p.image}
+          alt=""
           style={{
             position: 'absolute',
             left: p.x,
             top: p.y,
-            width: '20px',
-            height: '20px',
-            backgroundColor: p.color,
-            // borderRadius: '50%', // Optional: make round or keep square? User said "pixel square"
+            width: `${PROJECTILE_SIZE}px`,
+            height: `${PROJECTILE_SIZE}px`,
+            objectFit: 'contain',
+            imageRendering: 'pixelated',
+            zIndex: 150
+          }}
+        />
+      ))}
+      {enemyProjectiles.map(p => (
+        <img
+          key={p.id}
+          src={p.image}
+          alt=""
+          style={{
+            position: 'absolute',
+            left: p.x,
+            top: p.y,
+            width: `${ENEMY_PROJECTILE_SIZE}px`,
+            height: `${ENEMY_PROJECTILE_SIZE}px`,
+            objectFit: 'contain',
+            imageRendering: 'pixelated',
             zIndex: 150
           }}
         />
@@ -324,7 +400,7 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
             </span>
           </div>
 
-          <div style={{
+          <div ref={playerRef} style={{
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
