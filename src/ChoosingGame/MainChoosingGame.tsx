@@ -276,7 +276,9 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
   ) : undefined;
 
   // Resolve the sprite to use for the player in the lobby
-  const lobbySprite = characterType === 'custom' ? (generatedSprites || answers.generatedSprites) : null;
+  // CRITICAL FIX: Only use confirmed sprites (answers.generatedSprites) for the actual player
+  // prevent using the "preview" generatedSprites (which is for the modal only)
+  const lobbySprite = characterType === 'custom' ? answers.generatedSprites : null;
 
   return (
     <div style={{
