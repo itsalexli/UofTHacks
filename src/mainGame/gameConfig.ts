@@ -7,6 +7,7 @@ export interface StaticSprite {
   y: number;
   color: string;
   title: string;
+  image?: string;
 }
 
 export const staticSprites: StaticSprite[] = [

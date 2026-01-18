@@ -4,12 +4,25 @@ import fillerImage from '../assets/images/filler-image.jpg';
 import { QuestionScreen } from './QuestionScreen';
 import { initializeQuestionBank, getNextQuestion, recordResult, isQuestionBankReady, type AgeLevel } from './questionBank';
 import type { Question } from './questionGenerator';
+import { Inventory } from './Inventory';
+import health0 from '../assets/images/healthbar/0.png'
+import health25 from '../assets/images/healthbar/25.png'
+import health50 from '../assets/images/healthbar/50.png'
+import health75 from '../assets/images/healthbar/75.png'
+import health100 from '../assets/images/healthbar/100.png'
+import victoryImg from '../assets/images/victory.png'
+import defeatImg from '../assets/images/defeat.png'
 
 interface BattleScreenProps {
   enemy: StaticSprite;
   learningMaterial?: string;
   ageLevel?: AgeLevel;
-  onClose: () => void;
+  onClose: (result?: 'win' | 'loss') => void;
+  inventoryItems?: string[];
+  playerHP: number;
+  setPlayerHP: React.Dispatch<React.SetStateAction<number>>;
+  onUseItem: (item: string, index: number) => void;
+  playerImage?: string;
 }
 
 interface Projectile {
@@ -20,16 +33,34 @@ interface Projectile {
   stopped?: boolean;
 }
 
-export const BattleScreen: React.FC<BattleScreenProps> = ({ enemy, learningMaterial, ageLevel = '6-7', onClose }) => {
+// Helper to get health image based on HP
+const getHealthImage = (hp: number) => {
+  if (hp >= 100) return health100;
+  if (hp >= 75) return health75;
+  if (hp >= 50) return health50;
+  if (hp >= 25) return health25;
+  return health0;
+}
+
+export const BattleScreen: React.FC<BattleScreenProps> = ({ 
+  enemy, learningMaterial, ageLevel = '6-7', 
+  onClose, 
+  inventoryItems = [], 
+  playerHP, 
+  setPlayerHP, 
+  onUseItem,
+  playerImage
+}) => {
   const [activeSpell, setActiveSpell] = useState<string | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [projectiles, setProjectiles] = useState<Projectile[]>([]);
   const [isEnemyHurt, setIsEnemyHurt] = useState(false);
   const [isPlayerHurt, setIsPlayerHurt] = useState(false);
 
-  const [playerHP, setPlayerHP] = useState(100);
+  // playerHP is now controlled by props
   const [enemyHP, setEnemyHP] = useState(100);
-
+  const [isInventoryOpen, setIsInventoryOpen] = useState(false);
+  
   const [battleResult, setBattleResult] = useState<'win' | 'loss' | null>(null);
   const [isBankReady, setIsBankReady] = useState(false);
 
@@ -90,12 +121,18 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({ enemy, learningMater
         })
         .filter(p => !p.stopped && p.x < window.innerWidth);
 
-      if (hitOccurred) {
-        setEnemyHP(prev => Math.max(0, prev - 20));
-        setIsEnemyHurt(true);
-        setTimeout(() => setIsEnemyHurt(false), 200);
-      }
-
+        if (hitOccurred) {
+          // Reduce enemy HP by 25 (4 hits to kill) instead of arbitrary amount
+          setEnemyHP(prev => {
+            if (prev <= 25) return 0;
+            if (prev <= 50) return 25;
+            if (prev <= 75) return 50;
+            return 75;
+          });
+          setIsEnemyHurt(true);
+          setTimeout(() => setIsEnemyHurt(false), 200);
+        }
+      
       setProjectiles(nextProjectiles);
     });
 
@@ -130,7 +167,14 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({ enemy, learningMater
     } else if (!correct) {
       setTimeout(() => {
         setIsPlayerHurt(true);
-        setPlayerHP(prev => Math.max(0, prev - 20));
+        // Damage player by one tier
+        setPlayerHP(prev => {
+          if (prev <= 25) return 0;
+          if (prev <= 50) return 25;
+          if (prev <= 75) return 50;
+          if (prev <= 100) return 75;
+          return prev;
+        });
         setTimeout(() => setIsPlayerHurt(false), 200);
       }, 300);
     }
@@ -210,39 +254,24 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({ enemy, learningMater
           gap: '20px'
         }}>
           {/* Player HP Bar Container */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{
-              width: '150px',
-              height: '20px',
-              backgroundColor: '#555',
-              borderRadius: '10px',
-              overflow: 'hidden',
-              border: '2px solid white',
-              position: 'relative',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
+            <img 
+              src={getHealthImage(playerHP)} 
+              alt={`${playerHP}% Health`}
+              style={{
+                width: '200px',
+                height: 'auto',
+                imageRendering: 'pixelated'
+              }}
+            />
+            <span style={{
+              fontSize: '14px',
+              fontWeight: 'bold',
+              color: 'white',
+              textShadow: '1px 1px 2px black'
             }}>
-              <div style={{
-                width: `${playerHP}%`,
-                height: '100%',
-                backgroundColor: '#4CAF50', // Green HP
-                transition: 'width 0.3s ease-out',
-                position: 'absolute',
-                left: 0,
-                top: 0
-              }} />
-              <span style={{
-                fontSize: '14px',
-                fontWeight: 'bold',
-                color: 'white',
-                textShadow: '1px 1px 2px black',
-                zIndex: 1,
-                position: 'relative'
-              }}>
-                {playerHP}/100
-              </span>
-            </div>
+              {playerHP}/100
+            </span>
           </div>
 
           <div style={{
@@ -253,12 +282,25 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({ enemy, learningMater
             transition: 'filter 0.1s ease-in-out'
           }}>
             {/* Scaled up player sprite representation */}
-            <div style={{
-              width: SPRITE_SIZE * 2,
-              height: SPRITE_SIZE * 2,
-              backgroundColor: isPlayerHurt ? '#ffaaaa' : 'red', // Tint red when hurt
-              transition: 'background-color 0.1s ease-in-out'
-            }} />
+            {playerImage ? (
+              <div style={{
+                width: SPRITE_SIZE * 3, // Slightly larger for battle view
+                height: SPRITE_SIZE * 3,
+                backgroundImage: `url(${playerImage})`,
+                backgroundSize: 'contain',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'center',
+                backgroundColor: isPlayerHurt ? '#ffaaaa' : 'transparent',
+                transition: 'background-color 0.1s ease-in-out'
+              }} />
+            ) : (
+              <div style={{
+                width: SPRITE_SIZE * 2,
+                height: SPRITE_SIZE * 2,
+                backgroundColor: isPlayerHurt ? '#ffaaaa' : 'red', // Tint red when hurt
+                transition: 'background-color 0.1s ease-in-out'
+              }} />
+            )}
           </div>
         </div>
 
@@ -271,39 +313,24 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({ enemy, learningMater
           gap: '20px'
         }}>
           {/* Enemy HP Bar Container */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{
-              width: '150px',
-              height: '20px',
-              backgroundColor: '#555',
-              borderRadius: '10px',
-              overflow: 'hidden',
-              border: '2px solid white',
-              position: 'relative',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
+            <img 
+              src={getHealthImage(enemyHP)} 
+              alt={`${enemyHP}% Health`}
+              style={{
+                width: '200px',
+                height: 'auto',
+                imageRendering: 'pixelated'
+              }}
+            />
+            <span style={{
+              fontSize: '14px',
+              fontWeight: 'bold',
+              color: 'white',
+              textShadow: '1px 1px 2px black'
             }}>
-              <div style={{
-                width: `${enemyHP}%`,
-                height: '100%',
-                backgroundColor: '#4CAF50', // Green HP
-                transition: 'width 0.3s ease-out',
-                position: 'absolute',
-                left: 0,
-                top: 0
-              }} />
-              <span style={{
-                fontSize: '14px',
-                fontWeight: 'bold',
-                color: 'white',
-                textShadow: '1px 1px 2px black',
-                zIndex: 1,
-                position: 'relative'
-              }}>
-                {enemyHP}/100
-              </span>
-            </div>
+              {enemyHP}/100
+            </span>
           </div>
 
           <div ref={enemyRef} style={{
@@ -313,12 +340,25 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({ enemy, learningMater
             filter: isEnemyHurt ? 'drop-shadow(0 0 10px red)' : 'none', // Red hue/glow effect
             transition: 'filter 0.1s ease-in-out'
           }}>
+            {enemy.image ? (
+               <div style={{
+                width: SPRITE_SIZE * 3, // Make image slightly larger for battle
+                height: SPRITE_SIZE * 3,
+                backgroundImage: `url(${enemy.image})`,
+                backgroundSize: 'contain',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'center',
+                backgroundColor: isEnemyHurt ? '#ffaaaa' : 'transparent', 
+                transition: 'background-color 0.1s ease-in-out'
+               }} />
+            ) : (
             <div style={{
               width: SPRITE_SIZE * 2,
               height: SPRITE_SIZE * 2,
               backgroundColor: isEnemyHurt ? '#ffaaaa' : enemy.color, // Tint the sprite itself slightly red too
               transition: 'background-color 0.1s ease-in-out'
             }} />
+            )}
           </div>
         </div>
       </div>
@@ -354,7 +394,7 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({ enemy, learningMater
       </div>
 
       <button
-        onClick={onClose}
+        onClick={() => onClose(undefined)}
         style={{
           position: 'absolute',
           top: '20px',
@@ -371,6 +411,33 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({ enemy, learningMater
         Run Away
       </button>
 
+      {/* Inventory Button */}
+      <button
+        onClick={() => setIsInventoryOpen(true)}
+        style={{
+          position: 'absolute',
+          top: '20px',
+          left: '20px', // Moved to left side top to avoid conflict with run away
+          width: '50px',
+          height: '50px',
+          backgroundColor: '#8B4513',
+          border: '2px solid #D2691E',
+          borderRadius: '8px',
+          cursor: 'pointer',
+          zIndex: 1000
+        }}
+        title="Open Inventory"
+      />
+
+      {/* Inventory Modal */}
+      {isInventoryOpen && (
+        <Inventory 
+          onClose={() => setIsInventoryOpen(false)} 
+          items={inventoryItems} 
+          onUseItem={onUseItem}
+        />
+      )}
+
       {/* Result Popup Overlay */}
       {battleResult && (
         <div style={{
@@ -386,25 +453,32 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({ enemy, learningMater
           alignItems: 'center'
         }}>
           <div style={{
-            backgroundColor: 'white',
-            padding: '40px',
-            borderRadius: '20px',
-            textAlign: 'center',
-            color: 'black'
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center'
           }}>
-            <h1 style={{ fontSize: '48px', marginBottom: '20px' }}>
-              {battleResult === 'win' ? 'VICTORY!' : 'DEFEAT...'}
-            </h1>
-            <button
-              onClick={onClose}
+            <img 
+              src={battleResult === 'win' ? victoryImg : defeatImg} 
+              alt={battleResult === 'win' ? 'VICTORY!' : 'DEFEAT...'}
               style={{
+                maxWidth: '80vw',
+                maxHeight: '60vh',
+                objectFit: 'contain'
+              }}
+            />
+            <button
+              onClick={() => onClose(battleResult)}
+              style={{
+                marginTop: '20px',
                 padding: '15px 30px',
                 fontSize: '24px',
                 backgroundColor: battleResult === 'win' ? '#4CAF50' : '#ff4444',
                 color: 'white',
                 border: 'none',
                 borderRadius: '10px',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
               }}
             >
               {battleResult === 'win' ? 'Continue' : 'Try Again'}
