@@ -426,8 +426,8 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
                 placeholder="Paste your study notes here..."
                 style={{
                   position: 'absolute',
-                  left: '80px', // Adjusted to be centered-ish or aligned left in the modal
-                  top: '150px',
+                  left: '523px',
+                  top: '250px',
                   width: '425px',
                   height: '127px',
                   padding: '12px',
@@ -571,30 +571,85 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
             onSubmit={(answer) => handleSubmit(activeSprite, answer)}
             onClose={() => handleClose(activeSprite)}
             placeholder="Type your answer or use the mic..."
-            width={activeSprite.id === 'character' ? '60%' : undefined}
-            height={activeSprite.id === 'character' ? '95%' : undefined}
+            width={
+              activeSprite.id === 'character' ? '56%' :
+              activeSprite.id === 'background' ? '63%' :
+              activeSprite.id === 'music' ? '63%' :
+              undefined
+            }
+            height={
+              activeSprite.id === 'character' ? '95%' :
+              activeSprite.id === 'background' ? '92%' :
+              activeSprite.id === 'music' ? '92%' :
+              undefined
+            }
             layout={activeSprite.id === 'character' ? 'split' : 'default'}
             onInputChange={setCurrentInput}
             leftPaneContent={leftPaneContent}
             rightPaneContent={rightPaneContent}
             isLoading={modalStep === 'loading'}
             submitLabel={modalStep === 'review' ? 'Confirm' : 'Submit'}
-            inputAreaStyle={activeSprite.id === 'character' ? {
-                marginBottom: '150px', // Push up from bottom
-                marginRight: '35px',  // Push in from right
+            inputAreaStyle={
+              activeSprite.id === 'character' ? {
+                marginBottom: '90px', // Push up from bottom
+                marginRight: '95px',  // Push in from right
                 width: '90%',         // Ensure it fits
-                maxWidth: '320px',    // Constrain width
-                alignSelf: 'center',   // Center horizontally in the pane
-            } : undefined}
-            backgroundImage={
-                activeSprite.id === 'character' ? (modalStep === 'review' ? characterShowcaseBg : characterDesignerBg) : 
-                activeSprite.id === 'music' ? soundDesignerBg :
-                activeSprite.id === 'background' ? backgroundDesignerBg : undefined
+                maxWidth: '250px',    // Constrain width
+                alignSelf: 'center',  // Center horizontally in the pane
+              } :
+              activeSprite.id === 'background' ? {
+                position: 'absolute',
+                top: '285px',
+                right: '225px',
+                width: '85%',         // Ensure it fits
+                maxWidth: '250px',    // Constrain width
+                zIndex: 10,           // Ensure it appears above background
+              } :
+              activeSprite.id === 'music' ? {
+                position: 'absolute',
+                top: '285px',
+                right: '225px',
+                width: '85%',         // Ensure it fits
+                maxWidth: '250px',    // Constrain width
+                zIndex: 10,           // Ensure it appears above background
+              } : undefined
             }
-            textareaStyle={activeSprite.id === 'character' ? { minHeight: '300px' } : undefined}
-            closeButtonImage={activeSprite.id === 'character' ? exitButtonImg : undefined}
-            hideInput={activeSprite.id === 'character' && modalStep === 'review'}
             onPaintClick={activeSprite.id === 'character' ? handlePaintClick : undefined}
+            backgroundImage={
+              activeSprite.id === 'character'
+                ? (modalStep === 'review' ? characterShowcaseBg : characterDesignerBg)
+                : activeSprite.id === 'background'
+                ? backgroundDesignerBg
+                : activeSprite.id === 'music'
+                ? soundDesignerBg
+                : undefined
+            }
+          textareaStyle={
+            activeSprite.id === 'character'
+              ? (modalStep === 'review' ? { minHeight: '300px' } : { minHeight: '270px' })
+              : activeSprite.id === 'background'
+              ? { minHeight: '255px' }
+              : activeSprite.id === 'music'
+              ? { minHeight: '255px' }
+              : undefined
+          }
+          closeButtonImage={
+            activeSprite.id === 'character' ||
+            activeSprite.id === 'background' ||
+            activeSprite.id === 'music'
+              ? exitButtonImg
+              : undefined
+          }
+          closeButtonStyle={
+            activeSprite.id === 'character'
+              ? { top: '40px', right: '70px' }
+              : activeSprite.id === 'background'
+              ? { top: '100px', right: '140px' }
+              : activeSprite.id === 'music'
+              ? { top: '100px', right: '140px' }
+              : undefined
+          }
+          hideInput={activeSprite.id === 'character' && modalStep === 'review'}
           />
         )}
 
@@ -605,7 +660,6 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
             />
         )}
 
-        {/* Checkmark Notification for Ready Characters */}
         {/* Checkmark Notification for Ready Characters */}
         {generatedSprites && !activeMenu && (
             <button

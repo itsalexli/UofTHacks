@@ -257,10 +257,10 @@ export function PromptModal({
                 <div style={styles.submitRow}>
                     <button style={styles.submitButton} onClick={handleSubmit} disabled={isLoading}>
                     {isLoading ? 'Loading...' : (
-                        submitLabel === 'Submit' ? (
+                        submitLabel === 'Submit' || submitLabel === 'Confirm' ? (
                             <img
                                 src={submitButtonImg}
-                                alt="Submit"
+                                alt={submitLabel}
                                 style={{
                                     width: '100%',
                                     height: '100%',
