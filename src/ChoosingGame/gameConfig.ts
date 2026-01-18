@@ -12,10 +12,10 @@ export interface StaticSprite {
   size?: number;         // Optional custom size (defaults to SPRITE_SIZE)
 }
 
-import portalGif from '../assets/images/portal.gif';
-import stand1 from '../assets/images/STAND 1.png';
-import stand2 from '../assets/images/STAND 2.png';
-import stand3 from '../assets/images/STAND 3.png';
+import portalGif from '../assets/choosingpage/portal.gif';
+import stand1 from '../assets/choosingpage/stands/STAND 1.png';
+import stand2 from '../assets/choosingpage/stands/STAND 2.png';
+import stand3 from '../assets/choosingpage/stands/STAND 3.png';
 
 export const staticSprites: StaticSprite[] = [
   {

@@ -23,8 +23,6 @@ export interface PromptModalProps {
     leftPaneContent?: React.ReactNode;
     /** Optional content to render in the right pane */
     rightPaneContent?: React.ReactNode;
-    /** Custom label for the submit button */
-    submitLabel?: string;
     /** Whether to show loading state */
     isLoading?: boolean;
     /** Whether to clear input on submit (default true) */
@@ -57,7 +55,6 @@ export function PromptModal({
     onInputChange,
     leftPaneContent,
     rightPaneContent,
-    submitLabel = 'Submit',
     isLoading = false,
     clearOnSubmit = true,
     backgroundImage,

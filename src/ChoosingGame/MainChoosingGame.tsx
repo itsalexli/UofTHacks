@@ -5,22 +5,22 @@ import { Sprite } from '../shared/Sprite'
 import { staticSprites, SPRITE_SIZE, type StaticSprite } from './gameConfig'
 import { PromptModal } from './PromptModal'
 import { AGE_LEVELS, type AgeLevel } from '../mainGame/questionBank'
-import progressBar0 from '../assets/images/progressBar0.png'
-import progressBar1 from '../assets/images/progressBar1.png'
-import progressBar2 from '../assets/images/progressBar2.png'
-import progressBar3 from '../assets/images/progressBar3.png'
-import choosingBackground from '../assets/images/choosingBackground.png'
-import defaultLeftImg from '../assets/images/defaultleft.png'
-import defaultRightImg from '../assets/images/defaultright.png'
+import progressBar0 from '../assets/progressbar/progressBar0.png'
+import progressBar1 from '../assets/progressbar/progressBar1.png'
+import progressBar2 from '../assets/progressbar/progressBar2.png'
+import progressBar3 from '../assets/progressbar/progressBar3.png'
+import choosingBackground from '../assets/choosingpage/choosingBackground.png'
+import defaultLeftImg from '../assets/sprites/defaultleft.png'
+import defaultRightImg from '../assets/sprites/defaultright.png'
 import hkLeft from '../assets/hellokitty/hk-left.png'
 import hkRight from '../assets/hellokitty/hk-right.png'
 import hkUp from '../assets/hellokitty/hk-up.png'
 import hkDown from '../assets/hellokitty/hk-down.png'
-import characterDesignerBg from '../assets/_designer_ popups/character designer.png'
-import characterShowcaseBg from '../assets/_designer_ popups/character designer (Character showcase).png'
-import backgroundDesignerBg from '../assets/_designer_ popups/background designer.png'
-import soundDesignerBg from '../assets/_designer_ popups/sound designer.png'
-import exitButtonImg from '../assets/_designer_ popups/exitbutton.png'
+import characterDesignerBg from '../assets/choosingpage/modalBackgrounds/character designer.png'
+import characterShowcaseBg from '../assets/choosingpage/modalBackgrounds/character designer (Character showcase).png'
+import backgroundDesignerBg from '../assets/choosingpage/modalBackgrounds/background designer.png'
+import soundDesignerBg from '../assets/choosingpage/modalBackgrounds/sound designer.png'
+import exitButtonImg from '../assets/screenPopups/exitbutton.png'
 import portalBackgroundImg from '../assets/portal/portalbackground.png'
 import uploadTextButtonImg from '../assets/portal/uploadtextbutton.png'
 import enterPortalButtonImg from '../assets/portal/enterportalbutton.png'
@@ -597,7 +597,6 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
             leftPaneContent={leftPaneContent}
             rightPaneContent={rightPaneContent}
             isLoading={modalStep === 'loading'}
-            submitLabel={modalStep === 'review' ? 'Confirm' : 'Submit'}
             inputAreaStyle={
               activeSprite.id === 'character' ? {
                 marginBottom: '158px',
