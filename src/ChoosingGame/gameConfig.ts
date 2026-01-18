@@ -35,7 +35,7 @@ export const staticSprites: StaticSprite[] = [
     y: 400,
     color: 'green',
     title: 'Character Selection',
-    prompt: 'What type of character do you want to play as?',
+    prompt: '',
     image: stand1,
     size: 160
   },

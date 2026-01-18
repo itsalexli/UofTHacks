@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import micImg from '../assets/_designer_ popups/mic.png';
 
 // TypeScript declarations for Web Speech API
 interface SpeechRecognitionEvent extends Event {
@@ -214,7 +215,7 @@ export function DictationButton({
         height: size,
         borderRadius: '50%',
         border: 'none',
-        backgroundColor: isListening ? '#e53935' : '#4caf50',
+        backgroundColor: isListening ? '#e53935' : 'transparent',
         color: 'white',
         fontSize: size * 0.4,
         cursor: 'pointer',
@@ -223,6 +224,7 @@ export function DictationButton({
         justifyContent: 'center',
         transition: 'background-color 0.2s',
         animation: isListening ? 'dictation-pulse 1.5s infinite' : 'none',
+        padding: 0,
         ...style,
     };
 
@@ -244,7 +246,13 @@ export function DictationButton({
                 title={isListening ? 'Stop listening' : 'Start listening'}
                 type="button"
             >
-                {isListening ? '⏹' : '🎙️'}
+                {isListening ? '⏹' : (
+                    <img 
+                        src={micImg} 
+                        alt="Start Dictation" 
+                        style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+                    />
+                )}
             </button>
         </>
     );

@@ -33,7 +33,10 @@ export interface PromptModalProps {
     /** Optional custom style for the input area container */
     inputAreaStyle?: React.CSSProperties;
     /** Optional custom style for the textarea itself */
+    /** Optional custom style for the textarea itself */
     textareaStyle?: React.CSSProperties;
+    /** Optional image for the close button */
+    closeButtonImage?: string;
 }
 
 export function PromptModal({
@@ -53,6 +56,7 @@ export function PromptModal({
     backgroundImage,
     inputAreaStyle,
     textareaStyle,
+    closeButtonImage,
 }: PromptModalProps) {
     const [answer, setAnswer] = useState('');
     const [answerBeforeDictation, setAnswerBeforeDictation] = useState('');
@@ -107,7 +111,18 @@ export function PromptModal({
             backgroundSize: 'cover',
             backgroundPosition: 'center',
         },
-        closeButton: {
+        closeButton: closeButtonImage ? {
+            position: 'absolute',
+            top: '60px',
+            right: '70px',
+            width: '60px',
+            height: 'auto',
+            background: 'none',
+            border: 'none',
+            padding: 0,
+            cursor: 'pointer',
+            zIndex: 10,
+        } : {
             position: 'absolute',
             top: '12px',
             right: '12px',
@@ -185,14 +200,14 @@ export function PromptModal({
         submitButton: {
             padding: '12px 24px',
             borderRadius: '8px',
-            border: 'none',
+            border: 'none', 
             backgroundColor: isLoading ? '#ccc' : '#4a90d9',
             color: 'white',
             fontSize: '16px',
             fontWeight: 600,
             cursor: isLoading ? 'wait' : 'pointer',
             marginTop: '16px',
-            width: '100%',
+            width: '85%',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
@@ -243,8 +258,19 @@ export function PromptModal({
         <div style={styles.overlay} onClick={onClose}>
             <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
                 {/* Close Button */}
+                {/* Close Button */}
                 <button style={styles.closeButton} onClick={onClose} title="Close">
-                    ✕
+                    {closeButtonImage ? (
+                        <img 
+                            src={closeButtonImage} 
+                            alt="Close" 
+                            style={{ 
+                                width: '100%', 
+                                height: '100%', 
+                                objectFit: 'contain' 
+                            }} 
+                        />
+                    ) : '✕'}
                 </button>
 
                 {layout === 'split' ? (

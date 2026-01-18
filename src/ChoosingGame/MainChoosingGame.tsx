@@ -17,6 +17,7 @@ import hkRight from '../assets/hellokitty/hk-right.png'
 import hkUp from '../assets/hellokitty/hk-up.png'
 import hkDown from '../assets/hellokitty/hk-down.png'
 import characterDesignerBg from '../assets/_designer_ popups/character designer.png'
+import exitButtonImg from '../assets/_designer_ popups/exitbutton.png'
 
 // Progress bar images array (0 = empty, 3 = full)
 const progressBarImages = [progressBar0, progressBar1, progressBar2, progressBar3];
@@ -493,7 +494,7 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
             onClose={() => handleClose(activeSprite)}
             placeholder="Type your answer or use the mic..."
             width={activeSprite.id === 'character' ? '60%' : undefined}
-            height={activeSprite.id === 'character' ? '80%' : undefined}
+            height={activeSprite.id === 'character' ? '95%' : undefined}
             layout={activeSprite.id === 'character' ? 'split' : 'default'}
             onInputChange={setCurrentInput}
             leftPaneContent={leftPaneContent}
@@ -501,14 +502,15 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
             isLoading={modalStep === 'loading'}
             submitLabel={modalStep === 'review' ? 'Confirm' : 'Submit'}
             inputAreaStyle={activeSprite.id === 'character' ? {
-                marginBottom: '100px', // Push up from bottom
-                marginRight: '30px',  // Push in from right
+                marginBottom: '150px', // Push up from bottom
+                marginRight: '35px',  // Push in from right
                 width: '90%',         // Ensure it fits
                 maxWidth: '320px',    // Constrain width
                 alignSelf: 'center',   // Center horizontally in the pane
             } : undefined}
             backgroundImage={activeSprite.id === 'character' ? characterDesignerBg : undefined}
-            textareaStyle={activeSprite.id === 'character' ? { minHeight: '140px' } : undefined}
+            textareaStyle={activeSprite.id === 'character' ? { minHeight: '300px' } : undefined}
+            closeButtonImage={activeSprite.id === 'character' ? exitButtonImg : undefined}
           />
         )}
 
