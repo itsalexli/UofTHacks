@@ -17,13 +17,14 @@ import hkRight from '../assets/hellokitty/hk-right.png'
 import hkUp from '../assets/hellokitty/hk-up.png'
 import hkDown from '../assets/hellokitty/hk-down.png'
 import characterDesignerBg from '../assets/_designer_ popups/character designer.png'
+import characterShowcaseBg from '../assets/_designer_ popups/character designer (Character showcase).png'
 import backgroundDesignerBg from '../assets/_designer_ popups/background designer.png'
 import soundDesignerBg from '../assets/_designer_ popups/sound designer.png'
-import characterShowcaseBg from '../assets/_designer_ popups/character designer (Character showcase).png'
 import exitButtonImg from '../assets/_designer_ popups/exitbutton.png'
 import portalBackgroundImg from '../assets/portal/portalbackground.png'
 import uploadTextButtonImg from '../assets/portal/uploadtextbutton.png'
 import enterPortalButtonImg from '../assets/portal/enterportalbutton.png'
+import DrawingCanvas from './DrawingCanvas';
 
 // Progress bar images array (0 = empty, 3 = full)
 const progressBarImages = [progressBar0, progressBar1, progressBar2, progressBar3];
@@ -60,6 +61,7 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
   const [learningMaterial, setLearningMaterial] = useState('')
   const [ageLevel, setAgeLevel] = useState<AgeLevel>('6-7')
   const [isGenerating, setIsGenerating] = useState(false)
+  const [isDrawing, setIsDrawing] = useState(false)
   const keysPressed = useInputController()
 
 
@@ -239,6 +241,53 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
     console.log(`Answer for ${sprite.id}:`, answer)
     handleClose(sprite)
   }
+
+  const handlePaintClick = () => {
+    setIsDrawing(true);
+  };
+
+  const handleDrawingSubmit = (imageBase64: string) => {
+    setIsDrawing(false);
+    
+    // Close the character prompt modal if open
+    const charSprite = staticSprites.find(s => s.id === 'character');
+    if (charSprite) handleClose(charSprite);
+
+    setIsGenerating(true);
+    
+    // Detached fetch for background generation
+    fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            prompt: "Refine this sketch into a pixel art character", 
+            image: imageBase64 
+        }),
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success && data.paths) {
+        setGeneratedSprites({
+          front: data.paths.front,
+          back: data.paths.back,
+          left: data.paths.left,
+          right: data.paths.right
+        });
+        setSelectedCostume(data.paths.front);
+        // Do NOT setModalStep('review') here. Checkmark will handle it.
+      } else {
+        console.error('Generation failed:', data.error);
+        alert(`Failed to generate sprites: ${data.error}`);
+      }
+    })
+    .catch(error => {
+      console.error('Network error:', error);
+      alert('Network error. Please try again.');
+    })
+    .finally(() => {
+        setIsGenerating(false);
+    });
+  };
 
   // Easter Egg & Custom Content Logic
   const isHelloKitty = characterType === 'hellokitty';
@@ -487,7 +536,14 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
                   style={{
                     width: '100%',
                     height: '100%',
-                    objectFit: 'contain'
+                    objectFit: 'contain',
+                    padding: '12px 24px',
+                    backgroundColor: '#666',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    cursor: 'pointer'
                   }}
                 />
               </button>
@@ -543,67 +599,76 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
             leftPaneContent={leftPaneContent}
             rightPaneContent={rightPaneContent}
             isLoading={modalStep === 'loading'}
+            submitLabel={modalStep === 'review' ? 'Confirm' : 'Submit'}
             inputAreaStyle={
               activeSprite.id === 'character' ? {
-                marginBottom: '158px', // Push up from bottom
-                marginRight: '95px',  // Push in from right
-                width: '90%',         // Ensure it fits
-                maxWidth: '250px',    // Constrain width
-                alignSelf: 'center',   // Center horizontally in the pane
-            } :
-            activeSprite.id === 'background' ? {
-              position: 'absolute',
-              top: '305px',
-              right: '225px',
-              width: '85%',         // Ensure it fits
-              maxWidth: '250px',    // Constrain width
-              zIndex: 10,          // Ensure it appears above background
-            } :
-            activeSprite.id === 'music' ? {
-              position: 'absolute',
-              top: '305px',
-              right: '225px',
-              width: '85%',         // Ensure it fits
-              maxWidth: '250px',    // Constrain width
-              zIndex: 10,          // Ensure it appears above background
-            } : undefined
-          }
-          backgroundImage={
-            activeSprite.id === 'character'
-              ? (modalStep === 'review' ? characterShowcaseBg : characterDesignerBg)
-              : activeSprite.id === 'background'
-              ? backgroundDesignerBg
-              : activeSprite.id === 'music'
-              ? soundDesignerBg
-              : undefined
-          }
-          textareaStyle={
-            activeSprite.id === 'character'
-              ? (modalStep === 'review' ? { minHeight: '300px' } : { minHeight: '270px' })
-              : activeSprite.id === 'background'
-              ? { minHeight: '255px' }
-              : activeSprite.id === 'music'
-              ? { minHeight: '255px' }
-              : undefined
-          }
-          closeButtonImage={
-            activeSprite.id === 'character' ||
-            activeSprite.id === 'background' ||
-            activeSprite.id === 'music'
-              ? exitButtonImg
-              : undefined
-          }
-          closeButtonStyle={
-            activeSprite.id === 'character'
-              ? { top: '40px', right: '70px' }
-              : activeSprite.id === 'background'
-              ? { top: '100px', right: '140px' }
-              : activeSprite.id === 'music'
-              ? { top: '100px', right: '140px' }
-              : undefined
-          }
-          hideInput={activeSprite.id === 'character' && modalStep === 'review'}
+                marginBottom: '158px',
+                marginRight: '95px',
+                width: '90%',
+                maxWidth: '350px',
+                alignSelf: 'center',
+              } :
+              activeSprite.id === 'background' ? {
+                position: 'absolute',
+                top: '305px',
+                right: '225px',
+                width: '85%',
+                maxWidth: '350px',
+                zIndex: 10,
+              } :
+              activeSprite.id === 'music' ? {
+                position: 'absolute',
+                top: '305px',
+                right: '225px',
+                width: '85%',
+                maxWidth: '350px',
+                zIndex: 10,
+              } : undefined
+            }
+            backgroundImage={
+              activeSprite.id === 'character'
+                ? (modalStep === 'review' ? characterShowcaseBg : characterDesignerBg)
+                : activeSprite.id === 'background'
+                ? backgroundDesignerBg
+                : activeSprite.id === 'music'
+                ? soundDesignerBg
+                : undefined
+            }
+            textareaStyle={
+              activeSprite.id === 'character'
+                ? (modalStep === 'review' ? { minHeight: '300px' } : { minHeight: '270px' })
+                : activeSprite.id === 'background'
+                ? { minHeight: '255px' }
+                : activeSprite.id === 'music'
+                ? { minHeight: '255px' }
+                : undefined
+            }
+            closeButtonImage={
+              activeSprite.id === 'character' ||
+              activeSprite.id === 'background' ||
+              activeSprite.id === 'music'
+                ? exitButtonImg
+                : undefined
+            }
+            closeButtonStyle={
+              activeSprite.id === 'character'
+                ? { top: '40px', right: '70px' }
+                : activeSprite.id === 'background'
+                ? { top: '100px', right: '140px' }
+                : activeSprite.id === 'music'
+                ? { top: '100px', right: '140px' }
+                : undefined
+            }
+            hideInput={activeSprite.id === 'character' && modalStep === 'review'}
+            onPaintClick={activeSprite.id === 'character' ? handlePaintClick : undefined}
           />
+        )}
+
+        {isDrawing && (
+            <DrawingCanvas
+                onClose={() => setIsDrawing(false)}
+                onSubmit={handleDrawingSubmit}
+            />
         )}
 
         {/* Checkmark Notification for Ready Characters */}
