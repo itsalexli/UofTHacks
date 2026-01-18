@@ -500,7 +500,13 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
             rightPaneContent={rightPaneContent}
             isLoading={modalStep === 'loading'}
             submitLabel={modalStep === 'review' ? 'Confirm' : 'Submit'}
-            clearOnSubmit={activeSprite.id !== 'character'}
+            inputAreaStyle={activeSprite.id === 'character' ? {
+                marginBottom: '40px', // Push up from bottom
+                marginRight: '20px',  // Push in from right
+                width: '90%',         // Ensure it fits
+                maxWidth: '400px',    // Constrain width
+                alignSelf: 'center',   // Center horizontally in the pane
+            } : undefined}
             backgroundImage={activeSprite.id === 'character' ? characterDesignerBg : undefined}
           />
         )}

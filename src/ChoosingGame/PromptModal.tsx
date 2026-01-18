@@ -30,6 +30,8 @@ export interface PromptModalProps {
     clearOnSubmit?: boolean;
     /** Optional background image URL */
     backgroundImage?: string;
+    /** Optional custom style for the input area container */
+    inputAreaStyle?: React.CSSProperties;
 }
 
 export function PromptModal({
@@ -47,6 +49,7 @@ export function PromptModal({
     isLoading = false,
     clearOnSubmit = true,
     backgroundImage,
+    inputAreaStyle,
 }: PromptModalProps) {
     const [answer, setAnswer] = useState('');
     const [answerBeforeDictation, setAnswerBeforeDictation] = useState('');
@@ -141,6 +144,7 @@ export function PromptModal({
             padding: '24px',
             height: '100%',
             boxSizing: 'border-box',
+            position: 'relative', // Allow absolute positioning of children if needed
         },
         // Content Styles
         promptText: {
@@ -152,6 +156,7 @@ export function PromptModal({
         },
         inputWrapper: {
             // No margin needed as parent aligns to bottom
+            ...inputAreaStyle, // Apply custom styles
         },
         inputContainer: {
             display: 'flex',
