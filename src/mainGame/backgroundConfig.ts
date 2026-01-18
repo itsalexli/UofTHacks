@@ -5,33 +5,103 @@
  * Do not edit manually - regenerate using the script.
  */
 
+export interface SpawnZone {
+    x: number; // Percentage 0-1
+    y: number; // Percentage 0-1
+    width: number; // Percentage 0-1
+    height: number; // Percentage 0-1
+}
+
 export interface BackgroundImage {
     id: string;
     filename: string;
     tags: string[];
+    spawnZones?: SpawnZone[];
 }
 
 export const backgrounds: BackgroundImage[] = [
-    { id: "bg1", filename: "sunny_meadow_clearing.png", tags: ["sunshine", "happy", "bright", "meadow", "flowers", "cheerful", "peaceful", "countryside", "nature", "relaxing"] },
-    { id: "bg2", filename: "rainbow_field.png", tags: ["rainbow", "colorful", "sky", "joyful", "clouds", "happy", "pride", "magical", "bright", "whimsical"] },
-    { id: "bg3", filename: "dark_enchanted_forest.png", tags: ["dark", "mysterious", "forest", "spooky", "night", "scary", "halloween", "gothic", "eerie", "enchanted"] },
-    { id: "bg4", filename: "ocean_sunset_beach.png", tags: ["ocean", "sunset", "beach", "peaceful", "waves", "tropical", "vacation", "hawaii", "california", "chill", "relaxing", "romantic"] },
-    { id: "bg5", filename: "snowy_mountain_peak.png", tags: ["snow", "mountain", "cold", "winter", "majestic", "skiing", "alps", "everest", "adventure", "climbing", "christmas"] },
-    { id: "bg6", filename: "magical_castle_grounds.png", tags: ["castle", "magical", "fantasy", "fairy tale", "royal", "princess", "prince", "kingdom", "disney", "medieval", "enchanted"] },
-    { id: "bg7", filename: "space_nebula.png", tags: ["space", "stars", "nebula", "cosmic", "galaxy", "astronaut", "nasa", "sci-fi", "planets", "universe", "interstellar"] },
-    { id: "bg8", filename: "autumn_park_path.png", tags: ["autumn", "leaves", "park", "orange", "peaceful", "fall", "october", "cozy", "walking", "nature", "calm"] },
-    { id: "bg9", filename: "underwater_coral_reef.png", tags: ["underwater", "ocean", "coral", "fish", "blue", "diving", "scuba", "marine", "nemo", "tropical", "aquarium"] },
-    { id: "bg10", filename: "cherry_blossom_garden.png", tags: ["cherry", "blossom", "pink", "spring", "japan", "tokyo", "sakura", "romantic", "asian", "peaceful", "beautiful"] },
-    { id: "bg11", filename: "desert_sand_dunes.png", tags: ["desert", "sand", "hot", "dry", "adventure", "sahara", "egypt", "dubai", "middle east", "camels", "exotic"] },
-    { id: "bg12", filename: "city_night_skyline.png", tags: ["city", "night", "lights", "urban", "modern", "toronto", "new york", "nyc", "downtown", "skyscrapers", "metropolis", "busy"] },
-    { id: "bg13", filename: "enchanted_garden.png", tags: ["garden", "enchanted", "flowers", "magical", "nature", "fairy", "whimsical", "secret", "beautiful", "peaceful"] },
-    { id: "bg14", filename: "stormy_sky.png", tags: ["storm", "clouds", "dramatic", "thunder", "intense", "rain", "lightning", "dark", "moody", "powerful", "epic"] },
-    { id: "bg15", filename: "cozy_cabin_interior.png", tags: ["cabin", "cozy", "warm", "home", "comfort", "fireplace", "winter", "log cabin", "rustic", "hygge", "safe"] },
-    { id: "bg16", filename: "tropical_jungle.png", tags: ["jungle", "tropical", "adventure", "green", "wild", "amazon", "rainforest", "exotic", "exploring", "animals", "nature"] },
-    { id: "bg17", filename: "floating_islands.png", tags: ["floating", "islands", "fantasy", "dreamy", "surreal", "avatar", "magical", "sky", "imagination", "otherworldly"] },
-    { id: "bg18", filename: "northern_lights.png", tags: ["aurora", "northern lights", "night", "magical", "arctic", "iceland", "norway", "cold", "beautiful", "sky"] },
-    { id: "bg19", filename: "candy_land.png", tags: ["candy", "sweet", "colorful", "fun", "whimsical", "dessert", "sugar", "playful", "kids", "happy", "bright"] },
-    { id: "bg20", filename: "ancient_temple_ruins.png", tags: ["ancient", "ruins", "history", "mystery", "adventure", "temple", "archaeology", "indiana jones", "explorer", "old", "stone"] },
+    { 
+        id: "bg1", 
+        filename: "sunny_meadow_clearing.png", 
+        tags: ["sunshine", "happy", "bright", "meadow", "flowers", "cheerful", "peaceful", "countryside", "nature", "relaxing"],
+        spawnZones: [
+            { x: 0.1, y: 0.6, width: 0.8, height: 0.3 } // Bottom meadow area
+        ]
+    },
+    { 
+        id: "bg2", 
+        filename: "rainbow_field.png", 
+        tags: ["rainbow", "colorful", "sky", "joyful", "clouds", "happy", "pride", "magical", "bright", "whimsical"],
+        spawnZones: [
+            { x: 0.1, y: 0.65, width: 0.8, height: 0.25 } // Field below rainbow
+        ]
+    },
+    { 
+        id: "bg4", 
+        filename: "ocean_sunset_beach.png", 
+        tags: ["ocean", "sunset", "beach", "peaceful", "waves", "tropical", "vacation", "hawaii", "california", "chill", "relaxing", "romantic"],
+        spawnZones: [
+            { x: 0.1, y: 0.7, width: 0.8, height: 0.25 } // Sand area
+        ]
+    },
+    { 
+        id: "bg5", 
+        filename: "snowy_mountain_peak.png", 
+        tags: ["snow", "mountain", "cold", "winter", "majestic", "skiing", "alps", "everest", "adventure", "climbing", "christmas"],
+        spawnZones: [
+            { x: 0.1, y: 0.6, width: 0.8, height: 0.3 } // Snowy path/base
+        ]
+    },
+    { 
+        id: "bg7", 
+        filename: "space_nebula.png", 
+        tags: ["space", "stars", "nebula", "cosmic", "galaxy", "astronaut", "nasa", "sci-fi", "planets", "universe", "interstellar"],
+        spawnZones: [
+            { x: 0.2, y: 0.3, width: 0.6, height: 0.4 } // Central nebula area
+        ]
+    },
+    { 
+        id: "bg10", 
+        filename: "cherry_blossom_garden.png", 
+        tags: ["cherry", "blossom", "pink", "spring", "japan", "tokyo", "sakura", "romantic", "asian", "peaceful", "beautiful"],
+        spawnZones: [
+            { x: 0.2, y: 0.6, width: 0.6, height: 0.3 } // Garden path
+        ]
+    },
+    { 
+        id: "bg11", 
+        filename: "desert_sand_dunes.png", 
+        tags: ["desert", "sand", "hot", "dry", "adventure", "sahara", "egypt", "dubai", "middle east", "camels", "exotic"],
+        spawnZones: [
+            { x: 0.1, y: 0.5, width: 0.8, height: 0.4 } // Dunes area
+        ]
+    },
+    { 
+        id: "bg13", 
+        filename: "enchanted_garden.png", 
+        tags: ["garden", "enchanted", "flowers", "magical", "nature", "fairy", "whimsical", "secret", "beautiful", "peaceful"],
+        spawnZones: [
+            { x: 0.2, y: 0.6, width: 0.6, height: 0.3 } // Garden path
+        ]
+    },
+    { 
+        id: "bg16", 
+        filename: "tropical_jungle.png", 
+        tags: ["jungle", "tropical", "adventure", "green", "wild", "amazon", "rainforest", "exotic", "exploring", "animals", "nature"],
+        spawnZones: [
+            { x: 0.1, y: 0.65, width: 0.8, height: 0.25 } // Jungle floor
+        ]
+    },
+    { 
+        id: "bg19", 
+        filename: "candy_land.png", 
+        tags: ["candy", "sweet", "colorful", "fun", "whimsical", "dessert", "sugar", "playful", "kids", "happy", "bright"],
+        spawnZones: [
+            { x: 0.1, y: 0.6, width: 0.3, height: 0.3 }, // Left path section
+            { x: 0.4, y: 0.5, width: 0.2, height: 0.2 }, // Middle bridge/path
+            { x: 0.6, y: 0.6, width: 0.3, height: 0.3 }  // Right path section
+        ]
+    },
 ];
 
 // Default fallback background if matching fails

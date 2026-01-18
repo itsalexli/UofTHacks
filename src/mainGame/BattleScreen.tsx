@@ -12,6 +12,7 @@ import health75 from '../assets/images/healthbar/75.png'
 import health100 from '../assets/images/healthbar/100.png'
 import victoryImg from '../assets/images/victory.png'
 import defeatImg from '../assets/images/defeat.png'
+import bagImg from '../assets/images/bag.png'
 
 interface BattleScreenProps {
   enemy: StaticSprite;
@@ -108,18 +109,33 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
         .map(p => {
           if (p.stopped) return p;
 
-          let nextX = p.x + 10;
+          let nextX = p.color === 'purple' ? p.x - 10 : p.x + 10;
           let stopped = false;
 
           // Check collision with enemy
-          if (enemyRect && nextX + 10 >= enemyRect.left) {
+          if (enemyRect && nextX + 10 >= enemyRect.left && p.color !== 'purple') {
             stopped = true;
             hitOccurred = true;
           }
 
+          // Check collision with player (only for enemy projectiles)
+          if (p.color === 'purple' && nextX <= window.innerWidth * 0.2) {
+             stopped = true;
+             // Player hurt logic handled here instead of immediate timeout
+             setIsPlayerHurt(true);
+             setPlayerHP(prev => {
+               if (prev <= 25) return 0;
+               if (prev <= 50) return 25;
+               if (prev <= 75) return 50;
+               if (prev <= 100) return 75;
+               return prev;
+             });
+             setTimeout(() => setIsPlayerHurt(false), 200);
+          }
+
           return { ...p, x: nextX, stopped };
-        })
-        .filter(p => !p.stopped && p.x < window.innerWidth);
+        }) 
+        .filter(p => !p.stopped && p.x < window.innerWidth && p.x > 0);
 
         if (hitOccurred) {
           // Reduce enemy HP by 25 (4 hits to kill) instead of arbitrary amount
@@ -154,7 +170,7 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
       if (spell === 'Fireball') color = 'red';
       else if (spell === 'Ice Shard') color = 'blue';
       else if (spell === 'Lightning') color = 'yellow';
-      else if (spell === 'Heal') color = 'green';
+      else if (spell === 'Boulder') color = 'grey';
 
       const newProjectile: Projectile = {
         id: Date.now(),
@@ -165,18 +181,14 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
 
       setProjectiles(prev => [...prev, newProjectile]);
     } else if (!correct) {
-      setTimeout(() => {
-        setIsPlayerHurt(true);
-        // Damage player by one tier
-        setPlayerHP(prev => {
-          if (prev <= 25) return 0;
-          if (prev <= 50) return 25;
-          if (prev <= 75) return 50;
-          if (prev <= 100) return 75;
-          return prev;
-        });
-        setTimeout(() => setIsPlayerHurt(false), 200);
-      }, 300);
+      // Enemy shoots a projectile at the player
+      const enemyProjectile: Projectile = {
+        id: Date.now(),
+        x: window.innerWidth * 0.8, // Start from enemy side (approx)
+        y: window.innerHeight / 2,
+        color: 'purple' // Enemy projectile color
+      };
+      setProjectiles(prev => [...prev, enemyProjectile]);
     }
   };
 
@@ -371,7 +383,7 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
         width: '90%',
         justifyContent: 'center'
       }}>
-        {['Fireball', 'Ice Shard', 'Lightning', 'Heal'].map((spell) => (
+        {['Fireball', 'Ice Shard', 'Lightning', 'Boulder'].map((spell) => (
           <button
             key={spell}
             onClick={() => handleSpellClick(spell)}
@@ -420,9 +432,12 @@ export const BattleScreen: React.FC<BattleScreenProps> = ({
           left: '20px', // Moved to left side top to avoid conflict with run away
           width: '50px',
           height: '50px',
-          backgroundColor: '#8B4513',
-          border: '2px solid #D2691E',
-          borderRadius: '8px',
+          backgroundImage: `url(${bagImg})`,
+          backgroundSize: 'contain',
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center',
+          backgroundColor: 'transparent',
+          border: 'none',
           cursor: 'pointer',
           zIndex: 1000
         }}

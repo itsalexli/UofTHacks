@@ -1,0 +1,22 @@
+<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+    <!-- Hair (#333333) -->
+    <rect x="13" y="6" width="5" height="1" fill="#333333"/>
+    <!-- Skin (Head, Neck, Arm, Legs) -->
+    <rect x="12" y="7" width="7" height="7" fill="#A0522D"/>
+    <rect x="14" y="14" width="3" height="1" fill="#A0522D"/>
+    <!-- Arm (Right side of profile) -->
+    <rect x="10" y="15" width="1" height="6" fill="#A0522D"/>
+    <!-- Legs (offset profile stance) -->
+    <rect x="12" y="26" width="3" height="2" fill="#A0522D"/> 
+    <rect x="15" y="26" width="3" height="2" fill="#A0522D"/>
+    <!-- Jersey (Red #FF0000) -->
+    <rect x="11" y="15" width="8" height="7" fill="#FF0000"/>
+    <!-- Shorts (Black #000000) -->
+    <rect x="11" y="22" width="8" height="4" fill="#000000"/>
+    <!-- Face details (Profile: Eye/Mouth) -->
+    <rect x="14" y="10" width="1" height="1" fill="#000000"/>
+    <rect x="13" y="12" width="1" height="1" fill="#FF0000"/>
+    <!-- Shoes (White #FFFFFF) -->
+    <rect x="11" y="28" width="4" height="2" fill="#FFFFFF"/>
+    <rect x="15" y="28" width="4" height="2" fill="#FFFFFF"/>
+</svg>

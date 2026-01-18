@@ -24,18 +24,6 @@
     ]
   },
   {
-    "id": "bg3",
-    "title": "Dark Enchanted Forest",
-    "filename": "dark_enchanted_forest.png",
-    "tags": [
-      "dark",
-      "mysterious",
-      "forest",
-      "spooky",
-      "night"
-    ]
-  },
-  {
     "id": "bg4",
     "title": "Ocean Sunset Beach",
     "filename": "ocean_sunset_beach.png",
@@ -60,18 +48,6 @@
     ]
   },
   {
-    "id": "bg6",
-    "title": "Magical Castle Grounds",
-    "filename": "magical_castle_grounds.png",
-    "tags": [
-      "castle",
-      "magical",
-      "fantasy",
-      "fairy tale",
-      "royal"
-    ]
-  },
-  {
     "id": "bg7",
     "title": "Space Nebula",
     "filename": "space_nebula.png",
@@ -81,30 +57,6 @@
       "nebula",
       "cosmic",
       "galaxy"
-    ]
-  },
-  {
-    "id": "bg8",
-    "title": "Autumn Park Path",
-    "filename": "autumn_park_path.png",
-    "tags": [
-      "autumn",
-      "leaves",
-      "park",
-      "orange",
-      "peaceful"
-    ]
-  },
-  {
-    "id": "bg9",
-    "title": "Underwater Coral Reef",
-    "filename": "underwater_coral_reef.png",
-    "tags": [
-      "underwater",
-      "ocean",
-      "coral",
-      "fish",
-      "blue"
     ]
   },
   {
@@ -132,18 +84,6 @@
     ]
   },
   {
-    "id": "bg12",
-    "title": "City Night Skyline",
-    "filename": "city_night_skyline.png",
-    "tags": [
-      "city",
-      "night",
-      "lights",
-      "urban",
-      "modern"
-    ]
-  },
-  {
     "id": "bg13",
     "title": "Enchanted Garden",
     "filename": "enchanted_garden.png",
@@ -153,30 +93,6 @@
       "flowers",
       "magical",
       "nature"
-    ]
-  },
-  {
-    "id": "bg14",
-    "title": "Stormy Sky",
-    "filename": "stormy_sky.png",
-    "tags": [
-      "storm",
-      "clouds",
-      "dramatic",
-      "thunder",
-      "intense"
-    ]
-  },
-  {
-    "id": "bg15",
-    "title": "Cozy Cabin Interior",
-    "filename": "cozy_cabin_interior.png",
-    "tags": [
-      "cabin",
-      "cozy",
-      "warm",
-      "home",
-      "comfort"
     ]
   },
   {
@@ -192,30 +108,6 @@
     ]
   },
   {
-    "id": "bg17",
-    "title": "Floating Islands",
-    "filename": "floating_islands.png",
-    "tags": [
-      "floating",
-      "islands",
-      "fantasy",
-      "dreamy",
-      "surreal"
-    ]
-  },
-  {
-    "id": "bg18",
-    "title": "Northern Lights",
-    "filename": "northern_lights.png",
-    "tags": [
-      "aurora",
-      "northern lights",
-      "night",
-      "magical",
-      "arctic"
-    ]
-  },
-  {
     "id": "bg19",
     "title": "Candy Land",
     "filename": "candy_land.png",
@@ -225,18 +117,6 @@
       "colorful",
       "fun",
       "whimsical"
-    ]
-  },
-  {
-    "id": "bg20",
-    "title": "Ancient Temple Ruins",
-    "filename": "ancient_temple_ruins.png",
-    "tags": [
-      "ancient",
-      "ruins",
-      "history",
-      "mystery",
-      "adventure"
     ]
   }
 ]

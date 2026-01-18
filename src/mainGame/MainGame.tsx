@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import '../App.css'
 import { useInputController } from '../shared/useInputController'
 import { Sprite } from '../shared/Sprite'
@@ -22,6 +22,7 @@ import enemy3Img from '../assets/images/enemy3.png'
 import enemy4Img from '../assets/images/enemy4.png'
 import potionImg from '../assets/images/potion.png'
 import coinImg from '../assets/images/coin.png'
+import bagImg from '../assets/images/bag.png'
 import { Inventory } from './Inventory'
 
 interface MainGameProps {
@@ -30,8 +31,12 @@ interface MainGameProps {
 }
 
 function MainGame({ userAnswers, onBack }: MainGameProps) {
-  const [position, setPosition] = useState({ x: 0, y: 0 })
-  const [direction, setDirection] = useState<'up' | 'down' | 'left' | 'right'>('down')
+  // Start player at bottom middle
+  const [position, setPosition] = useState({ 
+    x: (window.innerWidth - PLAYER_SIZE) / 2, 
+    y: window.innerHeight - PLAYER_SIZE - 20 
+  })
+  const [direction, setDirection] = useState<'up' | 'down' | 'left' | 'right'>('up') // Face up towards the game
   const [isMoving, setIsMoving] = useState(false)
   const [frameToggle, setFrameToggle] = useState(false) // For animation
 
@@ -45,80 +50,32 @@ function MainGame({ userAnswers, onBack }: MainGameProps) {
   const [playerHP, setPlayerHP] = useState(100) // Lift playerHP state to MainGame
   const [isInventoryOpen, setIsInventoryOpen] = useState(false)
   const keysPressed = useInputController()
-  const initialized = useRef(false)
 
-  // Initialize random positions on mount
+  // Initialize sprites in a grid
   useEffect(() => {
-    if (initialized.current) return;
-    initialized.current = true;
+    // Only generate sprites if background is loaded (or if it's the initial load with no bg yet)
+    if (!background && userAnswers?.background) return;
 
-    const generateRandomPosition = (existingSprites: StaticSprite[]): { x: number, y: number } => {
-      const padding = 50; // Padding from screen edges
-      const minDistance = 100; // Minimum distance between sprites
-      const maxX = window.innerWidth - SPRITE_SIZE - padding;
-      const maxY = window.innerHeight - SPRITE_SIZE - padding;
-      const minX = padding;
-      const minY = padding;
-
-      let attempts = 0;
-      while (attempts < 100) {
-        const x = Math.random() * (maxX - minX) + minX;
-        const y = Math.random() * (maxY - minY) + minY;
-
-        // Check distance from player start position (0,0)
-        const distToPlayer = Math.sqrt(Math.pow(x - 0, 2) + Math.pow(y - 0, 2));
-        if (distToPlayer < 150) { // Don't spawn too close to player start
-          attempts++;
-          continue;
-        }
-
-        // Check distance from other sprites
-        let tooClose = false;
-        for (const sprite of existingSprites) {
-          const dist = Math.sqrt(Math.pow(x - sprite.x, 2) + Math.pow(y - sprite.y, 2));
-          if (dist < minDistance) {
-            tooClose = true;
-            break;
-          }
-        }
-
-        if (!tooClose) {
-          return { x, y };
-        }
-        attempts++;
-      }
-      // Fallback if no position found (should be rare with enough space)
-      return { x: Math.random() * (maxX - minX) + minX, y: Math.random() * (maxY - minY) + minY };
+    const getRandomImage = () => {
+      const rand = Math.random();
+      if (rand < 0.25) return enemy1Img;
+      if (rand < 0.5) return enemy2Img;
+      if (rand < 0.75) return enemy3Img;
+      return enemy4Img;
     };
 
-    const newSprites: StaticSprite[] = [];
-    initialSprites.forEach(template => {
-      const pos = generateRandomPosition(newSprites);
-      
-      // Determine which enemy image to use (randomly distributed among the 4)
-      const rand = Math.random();
-      let image: string;
-
-      if (rand < 0.25) {
-        image = enemy1Img;
-      } else if (rand < 0.5) {
-        image = enemy2Img;
-      } else if (rand < 0.75) {
-        image = enemy3Img;
-      } else {
-        image = enemy4Img;
-      }
-      
-      newSprites.push({ 
-        ...template, 
-        x: pos.x, 
-        y: pos.y,
-        image: image // Always assign an image
-      });
-    });
+    // Manually place each sprite at (100, 200) one at a time
+    const newSprites: StaticSprite[] = [
+      { ...initialSprites[0], x: 400, y: 180, image: getRandomImage() },
+      { ...initialSprites[1], x: 250, y: 60, image: getRandomImage() },
+      { ...initialSprites[4], x: 750, y: 200, image: getRandomImage() },
+      { ...initialSprites[5], x: 900, y: 50, image: getRandomImage() },
+      { ...initialSprites[6], x: 570, y: 325, image: getRandomImage() },
+    ];
 
     setGameSprites(newSprites);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [background]); // Re-run when background changes (loaded)
 
   // Match background on mount based on user's answer
   useEffect(() => {
@@ -351,9 +308,12 @@ function MainGame({ userAnswers, onBack }: MainGameProps) {
               right: '16px',
               width: '50px',
               height: '50px',
-              backgroundColor: '#8B4513', // Brown color
-              border: '2px solid #D2691E',
-              borderRadius: '8px',
+              backgroundImage: `url(${bagImg})`,
+              backgroundSize: 'contain',
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'center',
+              backgroundColor: 'transparent',
+              border: 'none',
               cursor: 'pointer',
               zIndex: 1000
             }}

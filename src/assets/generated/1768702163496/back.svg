@@ -1,0 +1,21 @@
+<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+    <!-- Hair (#333333) -->
+    <rect x="13" y="6" width="6" height="1" fill="#333333"/>
+    <!-- Skin (#A0522D) -->
+    <rect x="12" y="7" width="8" height="8" fill="#A0522D"/> 
+    <!-- Arms -->
+    <rect x="9" y="15" width="2" height="6" fill="#A0522D"/>
+    <rect x="21" y="15" width="2" height="6" fill="#A0522D"/>
+    <!-- Legs -->
+    <rect x="12" y="26" width="3" height="2" fill="#A0522D"/>
+    <rect x="17" y="26" width="3" height="2" fill="#A0522D"/>
+    <!-- Jersey (Red #FF0000) -->
+    <rect x="11" y="15" width="10" height="7" fill="#FF0000"/>
+    <!-- Number Plate (White #FFFFFF) -->
+    <rect x="14" y="17" width="4" height="3" fill="#FFFFFF"/>
+    <!-- Shorts (Black #000000) -->
+    <rect x="11" y="22" width="10" height="4" fill="#000000"/>
+    <!-- Shoes (White #FFFFFF) -->
+    <rect x="11" y="28" width="5" height="2" fill="#FFFFFF"/>
+    <rect x="16" y="28" width="5" height="2" fill="#FFFFFF"/>
+</svg>
