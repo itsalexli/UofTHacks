@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import background from '../assets/images/filler-qBackground.jpg';
+import background from '../assets/filler-qBackground.jpg';
 import { generateQuestion, type Question } from './questionGenerator';
 import type { AgeLevel } from './questionBank';
 

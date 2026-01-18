@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import micImg from '../assets/_designer_ popups/mic.png';
+import micImg from '../assets/choosingpage/mic.png';
 
 // TypeScript declarations for Web Speech API
 interface SpeechRecognitionEvent extends Event {

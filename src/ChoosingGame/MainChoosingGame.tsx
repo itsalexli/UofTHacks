@@ -5,25 +5,25 @@ import { Sprite } from '../shared/Sprite'
 import { staticSprites, SPRITE_SIZE, type StaticSprite } from './gameConfig'
 import { PromptModal } from './PromptModal'
 import { AGE_LEVELS, type AgeLevel } from '../mainGame/questionBank'
-import progressBar0 from '../assets/images/progressBar0.png'
-import progressBar1 from '../assets/images/progressBar1.png'
-import progressBar2 from '../assets/images/progressBar2.png'
-import progressBar3 from '../assets/images/progressBar3.png'
-import choosingBackground from '../assets/images/choosingBackground.png'
-import defaultLeftImg from '../assets/images/defaultleft.png'
-import defaultRightImg from '../assets/images/defaultright.png'
+import progressBar0 from '../assets/progressbar/progressBar0.png'
+import progressBar1 from '../assets/progressbar/progressBar1.png'
+import progressBar2 from '../assets/progressbar/progressBar2.png'
+import progressBar3 from '../assets/progressbar/progressBar3.png'
+import choosingBackground from '../assets/choosingpage/choosingBackground.png'
+import defaultLeftImg from '../assets/sprites/defaultleft.png'
+import defaultRightImg from '../assets/sprites/defaultright.png'
 import hkLeft from '../assets/hellokitty/hk-left.png'
 import hkRight from '../assets/hellokitty/hk-right.png'
 import hkUp from '../assets/hellokitty/hk-up.png'
 import hkDown from '../assets/hellokitty/hk-down.png'
-import characterDesignerBg from '../assets/_designer_ popups/character designer.png'
-import characterShowcaseBg from '../assets/_designer_ popups/character designer (Character showcase).png'
-import backgroundDesignerBg from '../assets/_designer_ popups/background designer.png'
-import soundDesignerBg from '../assets/_designer_ popups/sound designer.png'
-import exitButtonImg from '../assets/_designer_ popups/exitbutton.png'
+import characterDesignerBg from '../assets/choosingpage/modalBackgrounds/character designer.png'
+import characterShowcaseBg from '../assets/choosingpage/modalBackgrounds/character designer (Character showcase).png'
+import exitButtonImg from '../assets/screenPopups/exitbutton.png'
+import soundDesignerBg from '../assets/choosingpage/modalBackgrounds/sound designer.png'
+import backgroundDesignerBg from '../assets/choosingpage/modalBackgrounds/background designer.png'
 import portalBackgroundImg from '../assets/portal/portalbackground.png'
-import uploadTextButtonImg from '../assets/portal/uploadtextbutton.png'
-import enterPortalButtonImg from '../assets/portal/enterportalbutton.png'
+import uploadTextButtonImg from '../assets/portal/uploadTextButton.png'
+import enterPortalButtonImg from '../assets/portal/enterPortalButton.png'
 import DrawingCanvas from './DrawingCanvas';
 
 // Progress bar images array (0 = empty, 3 = full)
@@ -63,7 +63,6 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [isDrawing, setIsDrawing] = useState(false)
   const keysPressed = useInputController()
-
 
   // Game Loop
   useEffect(() => {
@@ -416,7 +415,8 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
               textAlign: 'center',
               maxWidth: '600px',
               width: '90%',
-              minHeight: '500px'
+              minHeight: '500px',
+              position: 'relative' // Ensure absolute children are relative to this container
             }}>
 
               {/* Text Area for pasting notes */}
@@ -426,8 +426,8 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
                 placeholder="Paste your study notes here..."
                 style={{
                   position: 'absolute',
-                  left: '523px',
-                  top: '250px',
+                  left: '80px', // Adjusted to be centered-ish or aligned left in the modal
+                  top: '150px',
                   width: '425px',
                   height: '127px',
                   padding: '12px',
@@ -465,8 +465,8 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
                 htmlFor="fileUpload"
                 style={{
                   position: 'absolute',
-                  left: '653px',
-                  top: '385px',
+                  left: '200px',
+                  top: '300px',
                   cursor: 'pointer'
                 }}
               >
@@ -480,13 +480,11 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
                 />
               </label>
 
-              
-
               {/* Age Level Selector */}
               <div style={{
                 position: 'absolute',
-                left: '678px',
-                top: '545px',
+                left: '220px',
+                top: '380px',
               }}>
                 <select
                   value={ageLevel}
@@ -519,10 +517,8 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
                 }}
                 style={{
                   position: 'absolute',
-                  top: '170px',
-                  right: '450px',
-                  width: '60px',
-                  height: 'auto',
+                  top: '20px',
+                  right: '20px',
                   background: 'none',
                   border: 'none',
                   padding: 0,
@@ -534,14 +530,9 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
                   src={exitButtonImg}
                   alt="Close"
                   style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'contain',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '16px',
-                    cursor: 'pointer'
+                    width: '40px',
+                    height: 'auto',
+                    objectFit: 'contain'
                   }}
                 />
               </button>
@@ -551,8 +542,8 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
                   disabled={!learningMaterial.trim()}
                   style={{
                     position: 'absolute',
-                    left: '653px',
-                    top: '560px',
+                    left: '200px',
+                    top: '420px',
                     background: 'none',
                     border: 'none',
                     cursor: learningMaterial.trim() ? 'pointer' : 'not-allowed',
@@ -580,84 +571,30 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
             onSubmit={(answer) => handleSubmit(activeSprite, answer)}
             onClose={() => handleClose(activeSprite)}
             placeholder="Type your answer or use the mic..."
-            width={
-              activeSprite.id === 'character' ? '56%' :
-              activeSprite.id === 'background' ? '63%' :
-              activeSprite.id === 'music' ? '63%' :
-              undefined
-            }
-            height={
-              activeSprite.id === 'character' ? '95%' :
-              activeSprite.id === 'background' ? '92%' :
-              activeSprite.id === 'music' ? '92%' :
-              undefined
-            }
+            width={activeSprite.id === 'character' ? '60%' : undefined}
+            height={activeSprite.id === 'character' ? '95%' : undefined}
             layout={activeSprite.id === 'character' ? 'split' : 'default'}
             onInputChange={setCurrentInput}
             leftPaneContent={leftPaneContent}
             rightPaneContent={rightPaneContent}
             isLoading={modalStep === 'loading'}
             submitLabel={modalStep === 'review' ? 'Confirm' : 'Submit'}
-            inputAreaStyle={
-              activeSprite.id === 'character' ? {
-                marginBottom: '90px', // Push up from bottom
-                marginRight: '95px',  // Push in from right
+            inputAreaStyle={activeSprite.id === 'character' ? {
+                marginBottom: '150px', // Push up from bottom
+                marginRight: '35px',  // Push in from right
                 width: '90%',         // Ensure it fits
-                maxWidth: '250px',    // Constrain width
+                maxWidth: '320px',    // Constrain width
                 alignSelf: 'center',   // Center horizontally in the pane
-            } :
-            activeSprite.id === 'background' ? {
-              position: 'absolute',
-              top: '285px',
-              right: '225px',
-              width: '85%',         // Ensure it fits
-              maxWidth: '250px',    // Constrain width
-              zIndex: 10,          // Ensure it appears above background
-            } :
-            activeSprite.id === 'music' ? {
-              position: 'absolute',
-              top: '285px',
-              right: '225px',
-              width: '85%',         // Ensure it fits
-              maxWidth: '250px',    // Constrain width
-              zIndex: 10,          // Ensure it appears above background
-            } : undefined
-          }
-          backgroundImage={
-            activeSprite.id === 'character'
-              ? (modalStep === 'review' ? characterShowcaseBg : characterDesignerBg)
-              : activeSprite.id === 'background'
-              ? backgroundDesignerBg
-              : activeSprite.id === 'music'
-              ? soundDesignerBg
-              : undefined
-          }
-          textareaStyle={
-            activeSprite.id === 'character'
-              ? (modalStep === 'review' ? { minHeight: '300px' } : { minHeight: '270px' })
-              : activeSprite.id === 'background'
-              ? { minHeight: '255px' }
-              : activeSprite.id === 'music'
-              ? { minHeight: '255px' }
-              : undefined
-          }
-          closeButtonImage={
-            activeSprite.id === 'character' ||
-            activeSprite.id === 'background' ||
-            activeSprite.id === 'music'
-              ? exitButtonImg
-              : undefined
-          }
-          closeButtonStyle={
-            activeSprite.id === 'character'
-              ? { top: '40px', right: '70px' }
-              : activeSprite.id === 'background'
-              ? { top: '100px', right: '140px' }
-              : activeSprite.id === 'music'
-              ? { top: '100px', right: '140px' }
-              : undefined
-          }
-          hideInput={activeSprite.id === 'character' && modalStep === 'review'}
+            } : undefined}
+            backgroundImage={
+                activeSprite.id === 'character' ? (modalStep === 'review' ? characterShowcaseBg : characterDesignerBg) : 
+                activeSprite.id === 'music' ? soundDesignerBg :
+                activeSprite.id === 'background' ? backgroundDesignerBg : undefined
+            }
+            textareaStyle={activeSprite.id === 'character' ? { minHeight: '300px' } : undefined}
+            closeButtonImage={activeSprite.id === 'character' ? exitButtonImg : undefined}
+            hideInput={activeSprite.id === 'character' && modalStep === 'review'}
+            onPaintClick={activeSprite.id === 'character' ? handlePaintClick : undefined}
           />
         )}
 
@@ -668,6 +605,7 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
             />
         )}
 
+        {/* Checkmark Notification for Ready Characters */}
         {/* Checkmark Notification for Ready Characters */}
         {generatedSprites && !activeMenu && (
             <button

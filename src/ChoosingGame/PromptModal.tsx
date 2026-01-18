@@ -23,8 +23,6 @@ export interface PromptModalProps {
     leftPaneContent?: React.ReactNode;
     /** Optional content to render in the right pane */
     rightPaneContent?: React.ReactNode;
-    /** Custom label for the submit button */
-    submitLabel?: string;
     /** Whether to show loading state */
     isLoading?: boolean;
     /** Whether to clear input on submit (default true) */
@@ -44,6 +42,8 @@ export interface PromptModalProps {
     onPaintClick?: () => void;
     /** Optional custom style for the close button */
     closeButtonStyle?: React.CSSProperties;
+    /** Custom label for the submit button */
+    submitLabel?: string;
 }
 
 export function PromptModal({
@@ -57,7 +57,6 @@ export function PromptModal({
     onInputChange,
     leftPaneContent,
     rightPaneContent,
-    submitLabel = 'Submit',
     isLoading = false,
     clearOnSubmit = true,
     backgroundImage,
@@ -67,6 +66,7 @@ export function PromptModal({
     hideInput = false,
     onPaintClick,
     closeButtonStyle,
+    submitLabel = 'Submit',
 }: PromptModalProps) {
     const [answer, setAnswer] = useState('');
     const [answerBeforeDictation, setAnswerBeforeDictation] = useState('');
@@ -257,15 +257,17 @@ export function PromptModal({
                 <div style={styles.submitRow}>
                     <button style={styles.submitButton} onClick={handleSubmit} disabled={isLoading}>
                     {isLoading ? 'Loading...' : (
-                        <img
-                            src={submitButtonImg}
-                            alt="Submit"
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'contain'
-                            }}
-                        />
+                        submitLabel === 'Submit' ? (
+                            <img
+                                src={submitButtonImg}
+                                alt="Submit"
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'contain'
+                                }}
+                            />
+                        ) : submitLabel
                     )}
                     </button>
                     {!hideInput && (

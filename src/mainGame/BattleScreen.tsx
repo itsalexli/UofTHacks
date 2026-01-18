@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { SPRITE_SIZE, type StaticSprite } from './gameConfig';
-import fillerImage from '../assets/images/filler-image.jpg';
+import fillerImage from '../assets/filler-image.jpg';
 import { QuestionScreen } from './QuestionScreen';
 import { initializeQuestionBank, getNextQuestion, recordResult, isQuestionBankReady, type AgeLevel } from './questionBank';
 import type { Question } from './questionGenerator';
 import { Inventory } from './Inventory';
-import health0 from '../assets/images/healthbar/0.png'
-import health25 from '../assets/images/healthbar/25.png'
-import health50 from '../assets/images/healthbar/50.png'
-import health75 from '../assets/images/healthbar/75.png'
-import health100 from '../assets/images/healthbar/100.png'
-import victoryImg from '../assets/images/victory.png'
-import defeatImg from '../assets/images/defeat.png'
-import bagImg from '../assets/images/bag.png'
+import health0 from '../assets/healthbar/0.png'
+import health25 from '../assets/healthbar/25.png'
+import health50 from '../assets/healthbar/50.png'
+import health75 from '../assets/healthbar/75.png'
+import health100 from '../assets/healthbar/100.png'
+import victoryImg from '../assets/screenPopups/victory.png'
+import defeatImg from '../assets/screenPopups/defeat.png'
+import bagImg from '../assets/bag.png'
 
 interface BattleScreenProps {
   enemy: StaticSprite;
