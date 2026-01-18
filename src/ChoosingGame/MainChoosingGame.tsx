@@ -10,7 +10,7 @@ import progressBar0 from '../assets/progressbar/progressBar0.png'
 import progressBar1 from '../assets/progressbar/progressBar1.png'
 import progressBar2 from '../assets/progressbar/progressBar2.png'
 import progressBar3 from '../assets/progressbar/progressBar3.png'
-import choosingBackground from '../assets/choosingpage/choosingBackground.png'
+import choosingBackground from '../assets/background-final.png'
 import defaultLeftImg from '../assets/sprites/defaultleft.png'
 import defaultRightImg from '../assets/sprites/defaultright.png'
 import hkLeft from '../assets/hellokitty/hk-left.png'
@@ -25,7 +25,6 @@ import backgroundDesignerBg from '../assets/choosingpage/modalBackgrounds/backgr
 import portalBackgroundImg from '../assets/portal/portalbackground.png'
 import uploadTextButtonImg from '../assets/portal/uploadTextButton.png'
 import enterPortalButtonImg from '../assets/portal/enterPortalButton.png'
-import rockImg from '../assets/rock.png'
 import DrawingCanvas from './DrawingCanvas';
 
 // Progress bar images array (0 = empty, 3 = full)
@@ -168,12 +167,20 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
         // Hello Kitty Flow
         const lowerAnswer = answer.toLowerCase();
         if (lowerAnswer.includes('hello kitty') || lowerAnswer.includes('hellokitty') || lowerAnswer.includes('kitty')) {
-            setModalStep('loading')
+            handleClose(sprite);
+            setGeneratingType('character');
+            
+            // Fake loading delay then "generate" the HK sprites
             setTimeout(() => {
-                setModalStep('review')
-                setCharacterType('hellokitty')
-                setSelectedCostume(hkDown)
-            }, 1500)
+                setGeneratedSprites({
+                    front: hkDown,
+                    back: hkUp,
+                    left: hkLeft,
+                    right: hkRight
+                });
+                setSelectedCostume(hkDown);
+                setGeneratingType(null);
+            }, 2000);
             return;
         }
 
@@ -422,37 +429,6 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
           <Sprite key={sprite.id} x={sprite.x} y={sprite.y} color={sprite.color} size={sprite.size || SPRITE_SIZE} image={sprite.image} />
         ))}
 
-        {/* Decorative Rocks for Portal (Main Scene) */}
-        {/* Left Rock */}
-        <img
-            src={rockImg}
-            alt="Rock"
-            style={{
-                position: 'absolute',
-                top: '190px', // Near bottom of portal (y=60 + 150 = 210)
-                left: '550px', // Moved closer to middle (was 525)
-                width: '80px',
-                height: 'auto',
-                zIndex: 5, // Below player (usually) but decorative
-                imageRendering: 'pixelated'
-            }}
-        />
-        {/* Right Rock */}
-        <img
-            src={rockImg}
-            alt="Rock"
-            style={{
-                position: 'absolute',
-                top: '190px',
-                left: '680px', // Moved closer to middle (was 700)
-                width: '80px',
-                height: 'auto',
-                zIndex: 5,
-                imageRendering: 'pixelated',
-                transform: 'scaleX(-1)'
-            }}
-        />
-
         {/* Portal Modal with Learning Material Upload */}
         {activeMenu && activeSprite?.isPortal && (
           <div style={{
@@ -622,35 +598,6 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
                     }}
                 />
               </button>
-
-              {/* Decorative Rocks */}
-              <img
-                src={rockImg}
-                alt="Rock"
-                style={{
-                  position: 'absolute',
-                  bottom: '30px',
-                  left: '70px', // Moved towards middle (was 30)
-                  width: '100px',
-                  height: 'auto',
-                  zIndex: 20,
-                  imageRendering: 'pixelated'
-                }}
-              />
-              <img
-                src={rockImg}
-                alt="Rock"
-                style={{
-                  position: 'absolute',
-                  bottom: '30px',
-                  right: '70px', // Moved towards middle (was 30)
-                  width: '100px',
-                  height: 'auto',
-                  zIndex: 20,
-                  imageRendering: 'pixelated',
-                  transform: 'scaleX(-1)' // Flip for variety
-                }}
-              />
             </div>
           </div>
         )}

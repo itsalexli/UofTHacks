@@ -33,32 +33,32 @@ export const staticSprites: StaticSprite[] = [
   },
   {
     id: 'character',
-    x: 290,
-    y: 400,
+    x: 270,
+    y: 380,
     color: 'green',
     title: 'Character Selection',
     prompt: '',
     image: stand1,
-    size: 160
+    size: 200
   },
   {
     id: 'music',
-    x: 290,
-    y: 170,
+    x: 270,
+    y: 150,
     color: 'purple',
     title: 'Music Selection',
     prompt: 'What type of background music do you want?',
     image: stand2,
-    size: 160
+    size: 200
   },
   {
     id: 'background',
-    x: 845,
-    y: 265,
+    x: 825,
+    y: 245,
     color: 'orange',
     title: 'Background Selection',
     prompt: 'What background do you want?',
     image: stand3,
-    size: 160
+    size: 200
   },
 ];
