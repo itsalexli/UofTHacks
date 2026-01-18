@@ -41,6 +41,8 @@ export interface PromptModalProps {
     closeButtonImage?: string;
     /** Optional callback when paint button is clicked */
     onPaintClick?: () => void;
+    /** Optional custom style for the close button */
+    closeButtonStyle?: React.CSSProperties;
 }
 
 export function PromptModal({
@@ -63,6 +65,7 @@ export function PromptModal({
     closeButtonImage,
     hideInput = false,
     onPaintClick,
+    closeButtonStyle,
 }: PromptModalProps) {
     const [answer, setAnswer] = useState('');
     const [answerBeforeDictation, setAnswerBeforeDictation] = useState('');
@@ -128,6 +131,7 @@ export function PromptModal({
             padding: 0,
             cursor: 'pointer',
             zIndex: 10,
+            ...closeButtonStyle,
         } : {
             position: 'absolute',
             top: '12px',
@@ -199,25 +203,31 @@ export function PromptModal({
             ...textareaStyle, // Apply custom styles
         },
         buttonContainer: {
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
+             display: 'none' // forcing removal of old container style usage if any remains
         },
         submitButton: {
-            padding: '12px 24px',
-            borderRadius: '8px',
-            border: 'none', 
-            backgroundColor: isLoading ? '#ccc' : '#4a90d9',
-            color: 'white',
-            fontSize: '16px',
-            fontWeight: 600,
+            border: 'none',
+            background: 'none',
             cursor: isLoading ? 'wait' : 'pointer',
             marginTop: '16px',
-            width: '85%',
+            width: '100%',
+            height: '60px',
             display: 'flex',
-            justifyContent: 'center',
             alignItems: 'center',
-            gap: '8px'
+            justifyContent: 'center'
+        },
+        submitRow: {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '5px',
+            marginTop: '-13px',
+            position: 'relative', 
+        },
+        dictationContainer: {
+            display: 'flex',
+            alignItems: 'center',
+            marginLeft: '8px'
         },
     };
 
@@ -239,7 +249,29 @@ export function PromptModal({
                             autoFocus
                             disabled={isLoading}
                         />
-                        <div style={styles.buttonContainer}>
+                    </div>
+                )}
+
+                {/* Submit Button and Dictation Tool Row */}
+                <div style={styles.submitRow}>
+                    <button 
+                        style={{
+                            ...styles.submitButton,
+                            backgroundColor: isLoading ? '#ccc' : '#4a90d9',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            padding: '0 24px',
+                            fontSize: '16px',
+                            fontWeight: 600,
+                        }} 
+                        onClick={handleSubmit} 
+                        disabled={isLoading}
+                    >
+                        {isLoading ? 'Loading...' : submitLabel}
+                    </button>
+                    {!hideInput && (
+                         <div style={styles.dictationContainer}>
                             <DictationButton
                                 onDictationStart={() => setAnswerBeforeDictation(answer)}
                                 onTranscriptChange={(text) => {
@@ -265,7 +297,7 @@ export function PromptModal({
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
-                                        marginTop: '8px'
+                                        marginLeft: '8px'
                                     }}
                                     onClick={onPaintClick}
                                     title="Draw your character"
@@ -274,13 +306,8 @@ export function PromptModal({
                                 </button>
                             )}
                         </div>
-                    </div>
-                )}
-
-                {/* Submit Button */}
-                <button style={styles.submitButton} onClick={handleSubmit} disabled={isLoading}>
-                    {isLoading ? 'Loading...' : submitLabel}
-                </button>
+                    )}
+                </div>
             </div>
         </>
     );

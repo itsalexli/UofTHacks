@@ -18,6 +18,8 @@ import hkUp from '../assets/hellokitty/hk-up.png'
 import hkDown from '../assets/hellokitty/hk-down.png'
 import characterDesignerBg from '../assets/_designer_ popups/character designer.png'
 import characterShowcaseBg from '../assets/_designer_ popups/character designer (Character showcase).png'
+import backgroundDesignerBg from '../assets/_designer_ popups/background designer.png'
+import soundDesignerBg from '../assets/_designer_ popups/sound designer.png'
 import exitButtonImg from '../assets/_designer_ popups/exitbutton.png'
 import DrawingCanvas from './DrawingCanvas';
 
@@ -552,24 +554,83 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
             onSubmit={(answer) => handleSubmit(activeSprite, answer)}
             onClose={() => handleClose(activeSprite)}
             placeholder="Type your answer or use the mic..."
-            width={activeSprite.id === 'character' ? '60%' : undefined}
-            height={activeSprite.id === 'character' ? '95%' : undefined}
+            width={
+              activeSprite.id === 'character' ? '60%' :
+              activeSprite.id === 'background' ? '65%' :
+              activeSprite.id === 'music' ? '65%' :
+              undefined
+            }
+            height={
+              activeSprite.id === 'character' ? '95%' :
+              activeSprite.id === 'background' ? '92%' :
+              activeSprite.id === 'music' ? '92%' :
+              undefined
+            }
             layout={activeSprite.id === 'character' ? 'split' : 'default'}
             onInputChange={setCurrentInput}
             leftPaneContent={leftPaneContent}
             rightPaneContent={rightPaneContent}
             isLoading={modalStep === 'loading'}
             submitLabel={modalStep === 'review' ? 'Confirm' : 'Submit'}
-            inputAreaStyle={activeSprite.id === 'character' ? {
-                marginBottom: '150px', // Push up from bottom
-                marginRight: '35px',  // Push in from right
-                width: '90%',         // Ensure it fits
-                maxWidth: '320px',    // Constrain width
-                alignSelf: 'center',   // Center horizontally in the pane
-            } : undefined}
-            backgroundImage={activeSprite.id === 'character' ? (modalStep === 'review' ? characterShowcaseBg : characterDesignerBg) : undefined}
-            textareaStyle={activeSprite.id === 'character' ? { minHeight: '300px' } : undefined}
-            closeButtonImage={activeSprite.id === 'character' ? exitButtonImg : undefined}
+            inputAreaStyle={
+              activeSprite.id === 'character' ? {
+                marginBottom: '158px',
+                marginRight: '95px',
+                width: '90%',
+                maxWidth: '250px',
+                alignSelf: 'center',
+              } :
+              activeSprite.id === 'background' ? {
+                position: 'absolute',
+                top: '305px',
+                right: '225px',
+                width: '85%',
+                maxWidth: '250px',
+                zIndex: 10,
+              } :
+              activeSprite.id === 'music' ? {
+                position: 'absolute',
+                top: '305px',
+                right: '225px',
+                width: '85%',
+                maxWidth: '250px',
+                zIndex: 10,
+              } : undefined
+            }
+            backgroundImage={
+              activeSprite.id === 'character'
+                ? (modalStep === 'review' ? characterShowcaseBg : characterDesignerBg)
+                : activeSprite.id === 'background'
+                ? backgroundDesignerBg
+                : activeSprite.id === 'music'
+                ? soundDesignerBg
+                : undefined
+            }
+            textareaStyle={
+              activeSprite.id === 'character'
+                ? (modalStep === 'review' ? { minHeight: '300px' } : { minHeight: '270px' })
+                : activeSprite.id === 'background'
+                ? { minHeight: '255px' }
+                : activeSprite.id === 'music'
+                ? { minHeight: '255px' }
+                : undefined
+            }
+            closeButtonImage={
+              activeSprite.id === 'character' ||
+              activeSprite.id === 'background' ||
+              activeSprite.id === 'music'
+                ? exitButtonImg
+                : undefined
+            }
+            closeButtonStyle={
+              activeSprite.id === 'character'
+                ? { top: '40px', right: '70px' }
+                : activeSprite.id === 'background'
+                ? { top: '100px', right: '140px' }
+                : activeSprite.id === 'music'
+                ? { top: '100px', right: '140px' }
+                : undefined
+            }
             hideInput={activeSprite.id === 'character' && modalStep === 'review'}
             onPaintClick={activeSprite.id === 'character' ? handlePaintClick : undefined}
           />
