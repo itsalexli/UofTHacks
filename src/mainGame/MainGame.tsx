@@ -27,7 +27,7 @@ function MainGame({ userAnswers, onBack }: MainGameProps) {
   const [direction, setDirection] = useState<'up' | 'down' | 'left' | 'right'>('down')
   const [isMoving, setIsMoving] = useState(false)
   const [frameToggle, setFrameToggle] = useState(false) // For animation
-  
+
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [background, setBackground] = useState<BackgroundImage | null>(null)
   const [isLoadingBg, setIsLoadingBg] = useState(false)
@@ -154,8 +154,10 @@ function MainGame({ userAnswers, onBack }: MainGameProps) {
     <div style={backgroundStyle}>
       {/* Battle Screen Overlay takes full precedence if active */}
       {activeMenu && activeSprite ? (
-        <BattleScreen 
+        <BattleScreen
           enemy={activeSprite}
+          learningMaterial={userAnswers.learningMaterial}
+          ageLevel={userAnswers.ageLevel}
           onClose={() => {
             setActiveMenu(null)
             // Nudge player away to avoid immediate re-collision
@@ -192,19 +194,19 @@ function MainGame({ userAnswers, onBack }: MainGameProps) {
 
 
           {/* Player */}
-          <Sprite 
-            x={position.x} 
-            y={position.y} 
-            color="red" 
-            size={PLAYER_SIZE} 
+          <Sprite
+            x={position.x}
+            y={position.y}
+            color="red"
+            size={PLAYER_SIZE}
             image={
-              direction === 'up' 
+              direction === 'up'
                 ? (isMoving && frameToggle ? hkUpWalk : hkUp)
                 : direction === 'left'
-                ? (isMoving && frameToggle ? hkLeftWalk : hkLeft)
-                : direction === 'right'
-                ? (isMoving && frameToggle ? hkRightWalk : hkRight)
-                : (isMoving && frameToggle ? hkDownWalk : hkDown) // default down
+                  ? (isMoving && frameToggle ? hkLeftWalk : hkLeft)
+                  : direction === 'right'
+                    ? (isMoving && frameToggle ? hkRightWalk : hkRight)
+                    : (isMoving && frameToggle ? hkDownWalk : hkDown) // default down
             }
           />
 
