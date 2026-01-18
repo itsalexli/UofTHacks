@@ -32,6 +32,8 @@ export interface PromptModalProps {
     backgroundImage?: string;
     /** Optional custom style for the input area container */
     inputAreaStyle?: React.CSSProperties;
+    /** Optional custom style for the textarea itself */
+    textareaStyle?: React.CSSProperties;
 }
 
 export function PromptModal({
@@ -50,6 +52,7 @@ export function PromptModal({
     clearOnSubmit = true,
     backgroundImage,
     inputAreaStyle,
+    textareaStyle,
 }: PromptModalProps) {
     const [answer, setAnswer] = useState('');
     const [answerBeforeDictation, setAnswerBeforeDictation] = useState('');
@@ -172,6 +175,7 @@ export function PromptModal({
             fontSize: '16px',
             fontFamily: 'inherit',
             resize: 'vertical' as const,
+            ...textareaStyle, // Apply custom styles
         },
         buttonContainer: {
             display: 'flex',

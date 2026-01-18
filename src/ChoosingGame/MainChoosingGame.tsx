@@ -361,7 +361,7 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
                 placeholder="Paste your study notes here... (e.g., 'The water cycle consists of evaporation, condensation, and precipitation...')"
                 style={{
                   width: '100%',
-                  height: '150px',
+                  height: '200px',
                   padding: '12px',
                   borderRadius: '8px',
                   border: '2px solid #ddd',
@@ -501,13 +501,14 @@ function ChoosingGame({ onEnterPortal }: ChoosingGameProps) {
             isLoading={modalStep === 'loading'}
             submitLabel={modalStep === 'review' ? 'Confirm' : 'Submit'}
             inputAreaStyle={activeSprite.id === 'character' ? {
-                marginBottom: '40px', // Push up from bottom
-                marginRight: '20px',  // Push in from right
+                marginBottom: '100px', // Push up from bottom
+                marginRight: '30px',  // Push in from right
                 width: '90%',         // Ensure it fits
-                maxWidth: '400px',    // Constrain width
+                maxWidth: '320px',    // Constrain width
                 alignSelf: 'center',   // Center horizontally in the pane
             } : undefined}
             backgroundImage={activeSprite.id === 'character' ? characterDesignerBg : undefined}
+            textareaStyle={activeSprite.id === 'character' ? { minHeight: '140px' } : undefined}
           />
         )}
 
